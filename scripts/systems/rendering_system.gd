@@ -1,4 +1,4 @@
-extends Node3D
+extends Node
 class_name RenderingSystem
 
 var renderable_bodies_query := Query.new()
@@ -14,7 +14,7 @@ func _ready() -> void:
 	self.renderable_non_physics_query.with_and_register(Components.MeshComponent.get_type_name())
 	
 
-func _physics_process(_delta: float) -> void:
+func _process(_delta: float) -> void:
 	self.renderable_bodies_query.each(func render_physic_meshes(components: Array):
 		# Body, Mesh
 		var body : Components.PhysicsBody = components[0]
@@ -23,9 +23,6 @@ func _physics_process(_delta: float) -> void:
 		RenderingServer.instance_set_transform(mesh.instance, xform)
 		pass
 	)
-	pass
-
-func _process(_delta: float) -> void:
 	self.renderable_non_physics_query.each(func render_non_physic_meshes(components: Array):
 		# Xform, Mesh
 		var xform : Transform3D = components[0]

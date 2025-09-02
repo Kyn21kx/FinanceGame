@@ -1,5 +1,7 @@
 class_name Components
 
+enum MovState { Idle, Jumping, Dashing }
+
 class PhysicsBody:
 	var body_id: RID
 	var shape: RID
@@ -55,5 +57,21 @@ class Movement:
 	var speed: float
 	var jump_force: float
 
+	var state: MovState = MovState.Idle
+	
 	static func get_type_name() -> StringName:
 		return "Movement"
+
+
+class Controller:
+	# TODO: Maybe these could be functions or actions to make sure it works for controllers
+
+	var forward_key: int
+	var backward_key: int
+	var right_key: int
+	var left_key: int
+
+	var jump_key: int
+	
+	static func get_type_name() -> StringName:
+		return "Controller"

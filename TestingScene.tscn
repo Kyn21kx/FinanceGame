@@ -1,8 +1,14 @@
-[gd_scene load_steps=7 format=3 uid="uid://17diqbcutb3p"]
+[gd_scene load_steps=10 format=3 uid="uid://17diqbcutb3p"]
 
 [ext_resource type="Script" uid="uid://b2271ootsknqm" path="res://scripts/systems/movement_system.gd" id="1_dc2kq"]
+[ext_resource type="Script" path="res://scripts/systems/entity_spawn_system.gd" id="1_ypt0w"]
 [ext_resource type="Material" uid="uid://dfywvxmc6ljyy" path="res://materials/test_player.tres" id="2_6mnxl"]
 [ext_resource type="Script" uid="uid://c3cx1tdqnfacf" path="res://scripts/systems/rendering_system.gd" id="2_iyuba"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_ypt0w"]
+material = ExtResource("2_6mnxl")
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_5gf4p"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6mnxl"]
 
@@ -15,17 +21,22 @@ sky = SubResource("Sky_ypt0w")
 
 [node name="Node3D" type="Node3D"]
 
+[node name="EntitySpawnSystem" type="Node" parent="."]
+script = ExtResource("1_ypt0w")
+player_model = SubResource("CylinderMesh_ypt0w")
+player_shape = SubResource("CylinderShape3D_5gf4p")
+
+[node name="MovementSystem" type="Node" parent="."]
+script = ExtResource("1_dc2kq")
+metadata/_custom_type_script = "uid://b2271ootsknqm"
+
+[node name="RenderingSystem" type="Node" parent="."]
+script = ExtResource("2_iyuba")
+metadata/_custom_type_script = "uid://c3cx1tdqnfacf"
+
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.784528, 0.620094, 0, -0.620094, 0.784528, 0, 4.44979, 5.73055)
 environment = SubResource("Environment_5gf4p")
-
-[node name="MovementSystem" type="Node3D" parent="."]
-script = ExtResource("1_dc2kq")
-player_mat = ExtResource("2_6mnxl")
-metadata/_custom_type_script = "uid://b2271ootsknqm"
-
-[node name="RenderingSystem" type="Node3D" parent="."]
-script = ExtResource("2_iyuba")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.948379, 0.317139, 0, -0.317139, 0.948379, 0, 0, 0)
