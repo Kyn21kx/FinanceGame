@@ -1,6 +1,6 @@
 class_name Components
 
-enum MovState { Idle, Jumping, Dashing }
+enum MovState { Idle, Airbone, Dashing }
 
 class PhysicsBody:
 	var body_id: RID
@@ -22,6 +22,13 @@ class PhysicsBody:
 	func set_transform(xform: Transform3D) -> void:
 		PhysicsServer3D.body_set_state(self.body_id, PhysicsServer3D.BODY_STATE_TRANSFORM, xform)
 
+	func get_velocity() -> Vector3:
+		return PhysicsServer3D.body_get_state(self.body_id, PhysicsServer3D.BODY_STATE_LINEAR_VELOCITY)
+	
+	func set_gravity_scale(scale: float) -> void:
+		PhysicsServer3D.body_set_param(self.body_id, PhysicsServer3D.BODY_PARAM_GRAVITY_SCALE, scale) 
+		pass
+	
 	# func set_velocity(velocity: Vector3) -> void:
 		# pass
 
