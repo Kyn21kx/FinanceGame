@@ -1,0 +1,35 @@
+[gd_scene load_steps=7 format=3 uid="uid://17diqbcutb3p"]
+
+[ext_resource type="Script" uid="uid://b2271ootsknqm" path="res://scripts/systems/movement_system.gd" id="1_dc2kq"]
+[ext_resource type="Material" uid="uid://dfywvxmc6ljyy" path="res://materials/test_player.tres" id="2_6mnxl"]
+[ext_resource type="Script" uid="uid://c3cx1tdqnfacf" path="res://scripts/systems/rendering_system.gd" id="2_iyuba"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6mnxl"]
+
+[sub_resource type="Sky" id="Sky_ypt0w"]
+sky_material = SubResource("ProceduralSkyMaterial_6mnxl")
+
+[sub_resource type="Environment" id="Environment_5gf4p"]
+background_mode = 2
+sky = SubResource("Sky_ypt0w")
+
+[node name="Node3D" type="Node3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.784528, 0.620094, 0, -0.620094, 0.784528, 0, 4.44979, 5.73055)
+environment = SubResource("Environment_5gf4p")
+
+[node name="MovementSystem" type="Node3D" parent="."]
+script = ExtResource("1_dc2kq")
+player_mat = ExtResource("2_6mnxl")
+metadata/_custom_type_script = "uid://b2271ootsknqm"
+
+[node name="RenderingSystem" type="Node3D" parent="."]
+script = ExtResource("2_iyuba")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.948379, 0.317139, 0, -0.317139, 0.948379, 0, 0, 0)
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+transform = Transform3D(10.9948, 0, 0, 0, 0.169577, 0, 0, 0, 11.6443, 0, -0.986538, -2.30784)
+use_collision = true
