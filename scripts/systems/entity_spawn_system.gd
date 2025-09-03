@@ -23,7 +23,7 @@ func _make_player() -> void:
 	FlecsScene.entity_add_component_instance(player, Components.PhysicsBody.get_type_name(), physics_comp)
 	
 	var movement_comp := Components.Movement.new()
-	movement_comp.speed = 15
+	movement_comp.speed = 20 
 	movement_comp.jump_force = 10
 	FlecsScene.entity_add_component_instance(player, Components.Movement.get_type_name(), movement_comp)
 	
@@ -37,11 +37,8 @@ func _make_player() -> void:
 	FlecsScene.entity_add_component_instance(player, Components.Controller.get_type_name(), controller_comp)
 
 	var dash_comp := Components.Dash.new()
-	dash_comp.max_distance = 7
-	dash_comp.speed = 12
+	dash_comp.max_distance = 10
+	dash_comp.speed = 30
 	FlecsScene.entity_add_component_instance(player, Components.Dash.get_type_name(), dash_comp)
-	pass
-
-func _process(delta: float) -> void:
 	pass
 

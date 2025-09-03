@@ -15,6 +15,10 @@ run/main_scene="uid://17diqbcutb3p"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
 
+[debug_draw_3d]
+
+settings/addon_root_folder="res://addons/debug_draw_3d"
+
 [physics]
 
 3d/physics_engine="Jolt Physics"

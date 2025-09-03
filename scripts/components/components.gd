@@ -1,6 +1,6 @@
 class_name Components
 
-enum MovState { Idle, Airbone, Dashing }
+enum MovState { Idle, Jumped, Airbone, Dashing }
 
 class PhysicsBody:
 	var body_id: RID
@@ -12,6 +12,7 @@ class PhysicsBody:
 		PhysicsServer3D.body_set_space(self.body_id, p_world.space)
 		PhysicsServer3D.body_add_shape(self.body_id, self.shape)
 		PhysicsServer3D.body_set_shape_transform(self.body_id, 0, Transform3D.IDENTITY)
+		PhysicsServer3D.body_set_mode(self.body_id, PhysicsServer3D.BODY_MODE_RIGID)
 
 		self.set_transform(transform)
 	

@@ -35,12 +35,12 @@ script = ExtResource("2_iyuba")
 metadata/_custom_type_script = "uid://c3cx1tdqnfacf"
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.784528, 0.620094, 0, -0.620094, 0.784528, 0, 4.44979, 5.73055)
+transform = Transform3D(1, 0, 0, 0, 0.784528, 0.620094, 0, -0.620094, 0.784528, 0, 4.44979, 9.18153)
 environment = SubResource("Environment_5gf4p")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.948379, 0.317139, 0, -0.317139, 0.948379, 0, 0, 0)
 
 [node name="CSGBox3D" type="CSGBox3D" parent="."]
-transform = Transform3D(10.9948, 0, 0, 0, 0.169577, 0, 0, 0, 11.6443, 0, -0.986538, -2.30784)
+transform = Transform3D(34.2744, 0, 0, 0, 0.169577, 0, 0, 0, 27.1921, 0, -0.986538, -2.30784)
 use_collision = true
