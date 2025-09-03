@@ -7,10 +7,10 @@ func _ready() -> void:
 	self.players_query.with_and_register(Components.Movement.get_type_name())
 	self.players_query.with_and_register(Components.PhysicsBody.get_type_name())
 	self.players_query.with_and_register(Components.Controller.get_type_name())
+	self.players_query.with_and_register(Components.Dash.get_type_name())
 	pass
 
 func _handle_movement_state(movement: Components.Movement, body: Components.PhysicsBody):
-
 	var space_state := self.get_viewport().world_3d.direct_space_state
 	var origin : Vector3 = body.get_transform().origin
 	var query := PhysicsRayQueryParameters3D.create(origin, origin - (Vector3.UP))
@@ -32,12 +32,28 @@ func _handle_movement_state(movement: Components.Movement, body: Components.Phys
 
 	pass
 
-func _physics_process(_delta: float) -> void:
+func _handle_dash(delta: float,  movement: Components.Movement, body: Components.PhysicsBody, dash_info: Components.Dash):
+	# Get the elapsed time
+	if (dash_info.curr_time >= dash_info.get_end_time()):
+		movement.state = Components.MovState.Idle
+		return
+	movement.state = Components.MovState.Dashing
+
+	dash_info.curr_time += delta
+	var curr_vel : Vector3 = body.get_velocity()
+	var dash_vel := dash_info.direction * dash_info.speed
+	
+	# Preserve gravity and jumping
+	dash_vel.y = curr_vel.y
+	body.set_velocity(dash_vel)
+
+func _physics_process(delta: float) -> void:
 	# TODO: Process this by controller component
 	self.players_query.each(func _move_bodies(components: Array):
 		var movement: Components.Movement = components[0]
 		var body: Components.PhysicsBody = components[1]
 		var controller: Components.Controller = components[2]
+		var dash: Components.Dash = components[3]
 
 		# Grounded will be if the velocity on the Y component is not close to 0
 		var xform : Transform3D = body.get_transform()
@@ -51,8 +67,15 @@ func _physics_process(_delta: float) -> void:
 			input -= xform.basis.x
 		if (Input.is_key_pressed(controller.right_key)):
 			input += xform.basis.x
+
 		if (Input.is_key_pressed(controller.jump_key) && movement.state != Components.MovState.Airbone):
 			impulse = Vector3.UP
+
+		if (input != Vector3.ZERO && movement.state != Components.MovState.Dashing):
+			dash.direction = input
+
+		if (Input.is_key_pressed(controller.dash_key) && movement.state != Components.MovState.Dashing):
+			_handle_dash(delta, movement, body, dash)
 
 		_handle_movement_state(movement, body)
 

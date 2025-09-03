@@ -33,7 +33,13 @@ func _make_player() -> void:
 	controller_comp.left_key = KEY_A
 	controller_comp.right_key = KEY_D
 	controller_comp.jump_key = KEY_SPACE
+	controller_comp.dash_key = KEY_SHIFT
 	FlecsScene.entity_add_component_instance(player, Components.Controller.get_type_name(), controller_comp)
+
+	var dash_comp := Components.Dash.new()
+	dash_comp.max_distance = 7
+	dash_comp.speed = 12
+	FlecsScene.entity_add_component_instance(player, Components.Dash.get_type_name(), dash_comp)
 	pass
 
 func _process(delta: float) -> void:

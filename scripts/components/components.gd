@@ -6,14 +6,14 @@ class PhysicsBody:
 	var body_id: RID
 	var shape: RID
 
-	func _init(p_shape: Shape3D, p_world: World3D) -> void:
+	func _init(p_shape: Shape3D, p_world: World3D, transform: Transform3D = Transform3D.IDENTITY) -> void:
 		self.shape = p_shape.get_rid()
 		self.body_id = PhysicsServer3D.body_create()
 		PhysicsServer3D.body_set_space(self.body_id, p_world.space)
 		PhysicsServer3D.body_add_shape(self.body_id, self.shape)
 		PhysicsServer3D.body_set_shape_transform(self.body_id, 0, Transform3D.IDENTITY)
 
-		self.set_transform(Transform3D.IDENTITY)
+		self.set_transform(transform)
 	
 	
 	func get_transform() -> Transform3D:
@@ -22,6 +22,9 @@ class PhysicsBody:
 	func set_transform(xform: Transform3D) -> void:
 		PhysicsServer3D.body_set_state(self.body_id, PhysicsServer3D.BODY_STATE_TRANSFORM, xform)
 
+	func set_velocity(velocity: Vector3) -> void:
+		PhysicsServer3D.body_set_state(self.body_id, PhysicsServer3D.BODY_STATE_LINEAR_VELOCITY, velocity)
+	
 	func get_velocity() -> Vector3:
 		return PhysicsServer3D.body_get_state(self.body_id, PhysicsServer3D.BODY_STATE_LINEAR_VELOCITY)
 	
@@ -70,6 +73,23 @@ class Movement:
 		return "Movement"
 
 
+class Dash:
+	var max_distance: float
+	var speed: float
+	var direction: Vector3
+
+	# Will increment this every frame we are dashing for
+	var curr_time: float
+
+	# Returns the time to check for against curr_time, such that when curr_time >= end_time the dash needs to be stopped 
+	func get_end_time() -> float:
+		# t = d / V
+		return self.max_distance / self.speed
+	
+	static func get_type_name() -> StringName:
+		return "Dash"
+	
+
 class Controller:
 	# TODO: Maybe these could be functions or actions to make sure it works for controllers
 
@@ -79,6 +99,8 @@ class Controller:
 	var left_key: int
 
 	var jump_key: int
+
+	var dash_key: int
 	
 	static func get_type_name() -> StringName:
 		return "Controller"
