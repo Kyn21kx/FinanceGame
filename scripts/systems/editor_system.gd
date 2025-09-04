@@ -9,9 +9,23 @@ var registered_components := [
 ]
 
 var dropdown: OptionButton
+@export
+var vbox_container: VBoxContainer
+
+@export
+var add_entity_text: TextEdit
+
+@export
+var add_entity_btn: Button
+
+@export
+var entities_panel: Control
+
+var component_controls: Array[Control]
 
 func _ready() -> void:
-	print("Hey")
+	FlecsScene.on_named_entity_added(_on_entity_added)
+	add_entity_btn.pressed.connect(on_entity_add_button_clicked)
 	option_dropdown()
 
 func safe_add_child(instance: Node):
@@ -26,41 +40,68 @@ func safe_add_child_to(parent: Node, instance: Node):
 		return
 	parent.add_child(instance)
 
-func _process(delta: float):
+func on_entity_add_button_clicked():
+	FlecsScene.create_raw_entity_with_name(add_entity_text.text)
+	add_entity_text.text = ""
+
+func _on_entity_added(entity: RID, entity_name: String):
+	print("The entity ", entity, " was added with the entity_name ", entity_name)
+	# Add it to a scene hierarchy-like scrollable panel for later selection
+	var entity_button := Button.new()
+	entity_button.text = str(entity) + " - " + entity_name
+	self.entities_panel.add_child(entity_button)
+
+
+
+func on_component_selected(item: int):
+	if item < 1 || item > self.registered_components.size():
+		# Print a warning or something
+		return
+	var comp_instance = self.registered_components[item - 1].new()
+	for control: Control in self.component_controls:
+		control.queue_free()
+	self.component_controls.clear()
+	# First let's render the name
+	var label := Label.new()
+	label.text = comp_instance.get_type_name()
+	label.label_settings = LabelSettings.new()
+	label.label_settings.font_size = 24
+
+	safe_add_child_to(self.vbox_container, label)
+	self.component_controls.append(label)
+	
+	render_component_properties(comp_instance, self.vbox_container)
 	pass
 
 func option_dropdown():
 	# Create the dropdown
+	
 	dropdown = OptionButton.new()
+	dropdown.item_selected.connect(on_component_selected)
 	dropdown.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	safe_add_child(dropdown)
 	
 	# Populate dropdown with components
 	populate_dropdown()
 	
-	# Connect the dropdown signal
-	# dropdown.item_selected.connect(_on_dropdown_selected)
 	
 	# Create the button
 	var create_button = Button.new()
-	create_button.text = "Create Component"
+	create_button.text = "Add component"
 	# create_button.pressed.connect(_on_create_component)
 	safe_add_child(create_button)
 	
 	# Set up layout
-	var vbox = VBoxContainer.new()
-	safe_add_child_to(vbox, dropdown)
-	safe_add_child_to(vbox, create_button)
-	safe_add_child(vbox)
+	safe_add_child_to(self.vbox_container, dropdown)
+	safe_add_child_to(self.vbox_container, create_button)
 
 
 func populate_dropdown():
 	dropdown.clear()
+	dropdown.add_item("Select a component to add...", 0)
 	for component in registered_components:
 		dropdown.add_item(component.get_type_name())
 	
-	# Add a default empty option at index 0
-	dropdown.add_item("Select a component...", 0)
 	dropdown.select(0)
 
 func render_component_properties(sample_instance, container: Control):
@@ -77,7 +118,6 @@ func render_property(comp_instance, prop_name: String, type: int, container: Con
 	var hbox = HBoxContainer.new()
 	safe_add_child_to(container, hbox)
 	
-	# Add property label
 	var label = Label.new()
 	label.text = prop_name.capitalize() + ":"
 	label.custom_minimum_size.x = 120
@@ -88,124 +128,32 @@ func render_property(comp_instance, prop_name: String, type: int, container: Con
 	
 	match type:
 		TYPE_BOOL:
-			input_control = _create_bool_input(current_value)
+			input_control = UIUtils._create_bool_input(current_value)
 		
 		TYPE_INT:
-			input_control = _create_int_input(current_value)
+			input_control = UIUtils._create_int_input(current_value)
 		
 		TYPE_FLOAT:
-			input_control = _create_float_input(current_value)
+			input_control = UIUtils._create_float_input(current_value)
 		
 		TYPE_STRING:
-			input_control = _create_string_input(current_value)
+			input_control = UIUtils._create_string_input(current_value)
 		
 		TYPE_VECTOR2:
-			input_control = _create_vector2_input(current_value)
+			input_control = UIUtils._create_vector2_input(current_value)
 		
 		TYPE_VECTOR3:
-			input_control = _create_vector3_input(current_value)
+			input_control = UIUtils._create_vector3_input(current_value)
 		
 		TYPE_VECTOR4:
-			input_control = _create_vector4_input(current_value)
+			input_control = UIUtils._create_vector4_input(current_value)
 		
 		_:
 			# Fallback for unsupported types
-			input_control = _create_string_input(str(current_value))
+			input_control = UIUtils._create_string_input(str(current_value))
 	
 	safe_add_child_to(hbox, input_control)
 	
+	self.component_controls.append(hbox)
 	# Connect the input to update the component property
 	# _connect_input_to_property(input_control, comp_instance, prop_name, type)
-
-func _create_bool_input(value: bool) -> CheckBox:
-	var checkbox = CheckBox.new()
-	checkbox.button_pressed = value
-	return checkbox
-
-func _create_int_input(value: int) -> SpinBox:
-	var spinbox = SpinBox.new()
-	spinbox.step = 1
-	spinbox.allow_greater = true
-	spinbox.allow_lesser = true
-	spinbox.value = value
-	return spinbox
-
-func _create_float_input(value: float) -> SpinBox:
-	var spinbox = SpinBox.new()
-	spinbox.step = 0.1
-	spinbox.allow_greater = true
-	spinbox.allow_lesser = true
-	spinbox.value = value
-	return spinbox
-
-func _create_string_input(value: String) -> LineEdit:
-	var line_edit = LineEdit.new()
-	line_edit.text = value
-	line_edit.custom_minimum_size.x = 150
-	return line_edit
-
-func _create_vector2_input(value: Vector2) -> HBoxContainer:
-	var container = HBoxContainer.new()
-	
-	var x_input = SpinBox.new()
-	x_input.step = 0.1
-	x_input.allow_greater = true
-	x_input.allow_lesser = true
-	x_input.value = value.x
-	x_input.custom_minimum_size.x = 80
-	
-	var y_input = SpinBox.new()
-	y_input.step = 0.1
-	y_input.allow_greater = true
-	y_input.allow_lesser = true
-	y_input.value = value.y
-	y_input.custom_minimum_size.x = 80
-	
-	container.add_child(x_input)
-	container.add_child(y_input)
-	
-	return container
-
-func _create_vector3_input(value: Vector3) -> HBoxContainer:
-	var container = HBoxContainer.new()
-	
-	var x_input = SpinBox.new()
-	x_input.step = 0.1
-	x_input.allow_greater = true
-	x_input.allow_lesser = true
-	x_input.value = value.x
-	x_input.custom_minimum_size.x = 70
-	
-	var y_input = SpinBox.new()
-	y_input.step = 0.1
-	y_input.allow_greater = true
-	y_input.allow_lesser = true
-	y_input.value = value.y
-	y_input.custom_minimum_size.x = 70
-	
-	var z_input = SpinBox.new()
-	z_input.step = 0.1
-	z_input.allow_greater = true
-	z_input.allow_lesser = true
-	z_input.value = value.z
-	z_input.custom_minimum_size.x = 70
-	
-	container.add_child(x_input)
-	container.add_child(y_input)
-	container.add_child(z_input)
-	
-	return container
-
-func _create_vector4_input(value: Vector4) -> HBoxContainer:
-	var container = HBoxContainer.new()
-	
-	for i in range(4):
-		var input = SpinBox.new()
-		input.step = 0.1
-		input.allow_greater = true
-		input.allow_lesser = true
-		input.value = value[i]
-		input.custom_minimum_size.x = 60
-		container.add_child(input)
-	
-	return container

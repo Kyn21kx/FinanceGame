@@ -1,7 +1,6 @@
 @tool
 extends EditorPlugin
 
-
 # A class member to hold the dock during the plugin life cycle.
 var dock
 

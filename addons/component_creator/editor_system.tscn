@@ -2,9 +2,43 @@
 
 [ext_resource type="Script" uid="uid://blixrd25bblw6" path="res://scripts/systems/editor_system.gd" id="1_6xmen"]
 
-[node name="EditorSystem" type="Control"]
+[node name="Control" type="Control" node_paths=PackedStringArray("vbox_container", "add_entity_text", "add_entity_btn", "entities_panel")]
 layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_6xmen")
+vbox_container = NodePath("ScrollContainer/VBoxContainer")
+add_entity_text = NodePath("ScrollContainer/VBoxContainer/HBoxContainer/EntityName")
+add_entity_btn = NodePath("ScrollContainer/VBoxContainer/HBoxContainer/Button")
+entities_panel = NodePath("ScrollContainer/VBoxContainer/EntitiesInternal")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+clip_contents = false
+layout_mode = 0
+offset_right = 265.0
+offset_bottom = 337.0
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="EntityName" type="TextEdit" parent="ScrollContainer/VBoxContainer/HBoxContainer"]
+clip_contents = false
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Entity name"
+
+[node name="Button" type="Button" parent="ScrollContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Add"
+
+[node name="EntitiesInternal" type="VBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
