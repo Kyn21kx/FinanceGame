@@ -46,7 +46,6 @@ func _handle_movement_state(delta: float, movement: Components.Movement, body: C
 
 func _handle_dash(delta: float,  movement: Components.Movement, body: Components.PhysicsBody, dash_info: Components.Dash):
 	# Get the elapsed time
-	print("Current: ", dash_info.curr_time, ", End: ", dash_info.get_end_time())
 	var curr_vel : Vector3 = body.get_velocity()
 	if (dash_info.curr_time >= dash_info.get_end_time()):
 		# If the dash feels too "slippery" uncomment these

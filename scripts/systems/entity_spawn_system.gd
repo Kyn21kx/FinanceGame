@@ -11,7 +11,6 @@ var player_shape: Shape3D
 func _ready() -> void:
 	# Spawn the player at start with its default components
 	self._make_player()
-	pass
 
 func _make_player() -> void:
 	var player : RID = FlecsScene.create_raw_entity_with_name("Player")
@@ -40,5 +39,3 @@ func _make_player() -> void:
 	dash_comp.max_distance = 10
 	dash_comp.speed = 30
 	FlecsScene.entity_add_component_instance(player, Components.Dash.get_type_name(), dash_comp)
-	pass
-

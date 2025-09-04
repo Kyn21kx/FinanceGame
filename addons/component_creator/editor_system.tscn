@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://cr48bikl4mdkh"]
+
+[ext_resource type="Script" uid="uid://blixrd25bblw6" path="res://scripts/systems/editor_system.gd" id="1_6xmen"]
+
+[node name="EditorSystem" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_6xmen")
