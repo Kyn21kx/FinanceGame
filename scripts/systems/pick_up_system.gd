@@ -14,12 +14,12 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	# This process happens in three stages:
 	
-	self.collectables_query.each(func process_collectables(components: Array):
+	self.collectables_query.each(func process_collectables(_entity: RID, components: Array):
 		var collectable : Components.Collectable = components[0]
 		var collectable_phy : Components.PhysicsBody = components[1]
 		var collectable_mesh : Components.MeshComponent = components[2]
 		
-		self.collectors_query.each(func process_collectors(collectors_components: Array):
+		self.collectors_query.each(func process_collectors(_entity: RID, collectors_components: Array):
 			var collector : Components.Collector = collectors_components[0]
 			var collector_phy : Components.PhysicsBody = collectors_components[1]
 			
@@ -30,7 +30,7 @@ func _physics_process(delta: float) -> void:
 				return
 			
 			# 2. if so, move the collectables closer to "the collector" (the player)
-			var direction = collector_phy.get_transform().origin - collectable_phy.get_transform().origin 
+			var direction : Vector3 = collector_phy.get_transform().origin - collectable_phy.get_transform().origin 
 			var velocity = direction * collector.attraction_factor / collectable.weight
 			
 			collectable_phy.set_velocity(velocity)
