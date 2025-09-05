@@ -17,6 +17,10 @@ var coin_model: Mesh
 @export
 var coin_shape: Shape3D
 
+var ball_mesh := SphereMesh.new()
+
+var ball_shape := SphereShape3D.new()
+
 func _ready() -> void:
 	# Spawn the player at start with its default components
 	self._make_player()
@@ -31,7 +35,19 @@ func _ready() -> void:
 	self._make_coin(Vector3(-2.5, 0, -3))
 	self._make_coin(Vector3(-1, 0, -3.5))
 	
-	pass
+	self._make_ball()
+
+
+func _make_ball() -> void:
+	var ball : RID = FlecsScene.create_raw_entity_with_name("Ball")
+	var mesh_comp := Components.MeshComponent.new(ball_mesh, self.get_viewport().world_3d)
+	var xform := Transform3D(Basis(), Vector3(0, 5, -3))
+	var body := Components.PhysicsBody.new(ball_shape, self.get_viewport().world_3d, xform)
+	body.set_bounciness(0.7)
+
+	FlecsScene.entity_add_component_instance(ball, Components.PhysicsBody.get_type_name(), body)
+	FlecsScene.entity_add_component_instance(ball, Components.MeshComponent.get_type_name(), mesh_comp)
+
 
 func _make_player() -> void:
 	var player : RID = FlecsScene.create_raw_entity_with_name("Player")
@@ -43,7 +59,7 @@ func _make_player() -> void:
 	FlecsScene.entity_add_component_instance(player, Components.PhysicsBody.get_type_name(), physics_comp)
 	
 	var movement_comp := Components.Movement.new()
-	movement_comp.speed = 15
+	movement_comp.speed = 20 
 	movement_comp.jump_force = 10
 	FlecsScene.entity_add_component_instance(player, Components.Movement.get_type_name(), movement_comp)
 	
@@ -57,8 +73,8 @@ func _make_player() -> void:
 	FlecsScene.entity_add_component_instance(player, Components.Controller.get_type_name(), controller_comp)
 
 	var dash_comp := Components.Dash.new()
-	dash_comp.max_distance = 7
-	dash_comp.speed = 12
+	dash_comp.max_distance = 10
+	dash_comp.speed = 30
 	FlecsScene.entity_add_component_instance(player, Components.Dash.get_type_name(), dash_comp)
 	
 	var collector_comp := Components.Collector.new()

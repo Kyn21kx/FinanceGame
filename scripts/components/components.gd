@@ -1,6 +1,6 @@
 class_name Components
 
-enum MovState { Idle, Airbone, Dashing }
+enum MovState { Idle, Jumped, Dashing }
 enum CollectableType { Coin }
 
 class PhysicsBody:
@@ -13,6 +13,7 @@ class PhysicsBody:
 		PhysicsServer3D.body_set_space(self.body_id, p_world.space)
 		PhysicsServer3D.body_add_shape(self.body_id, self.shape)
 		PhysicsServer3D.body_set_shape_transform(self.body_id, 0, Transform3D.IDENTITY)
+		PhysicsServer3D.body_set_mode(self.body_id, PhysicsServer3D.BODY_MODE_RIGID)
 
 		self.set_transform(transform)
 	
@@ -33,9 +34,6 @@ class PhysicsBody:
 		PhysicsServer3D.body_set_param(self.body_id, PhysicsServer3D.BODY_PARAM_GRAVITY_SCALE, scale) 
 		pass
 	
-	# func set_velocity(velocity: Vector3) -> void:
-		# pass
-
 	func apply_force(force: Vector3) -> void:
 		PhysicsServer3D.body_apply_central_force(self.body_id, force)
 
@@ -50,6 +48,9 @@ class PhysicsBody:
 	
 	func set_collision_mask(mask: int) -> void:
 		return PhysicsServer3D.body_set_collision_mask(self.body_id, mask)
+
+	func set_bounciness(bounciness: float) -> void:
+		PhysicsServer3D.body_set_param(self.body_id, PhysicsServer3D.BODY_PARAM_BOUNCE, bounciness)
 	
 	static func get_type_name() -> StringName:
 		return "PhysicsBody"
@@ -81,12 +82,16 @@ class Movement:
 
 
 class Dash:
+	const DASH_COOLDOWN: float = 1
+
 	var max_distance: float
 	var speed: float
 	var direction: Vector3
 
 	# Will increment this every frame we are dashing for
-	var curr_time: float
+	var curr_dashing_time: float
+
+	var cooldown_time: float
 
 	# Returns the time to check for against curr_time, such that when curr_time >= end_time the dash needs to be stopped 
 	func get_end_time() -> float:
@@ -108,6 +113,7 @@ class Controller:
 	var jump_key: int
 
 	var dash_key: int
+	var hit_key: int
 	
 	static func get_type_name() -> StringName:
 		return "Controller"

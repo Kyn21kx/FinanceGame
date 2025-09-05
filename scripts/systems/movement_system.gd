@@ -10,7 +10,18 @@ func _ready() -> void:
 	self.players_query.with_and_register(Components.Dash.get_type_name())
 	pass
 
-func _handle_movement_state(movement: Components.Movement, body: Components.PhysicsBody):
+func _handle_movement_state(delta: float, movement: Components.Movement, body: Components.PhysicsBody, dash: Components.Dash):
+
+	if (movement.state == Components.MovState.Dashing):
+		dash.cooldown_time = dash.DASH_COOLDOWN
+		_handle_dash(delta, movement, body, dash)
+		return
+	# TODO: Check airbone dashing
+
+	if (movement.state == Components.MovState.Jumped):
+		body.apply_impulse(Vector3.UP * movement.jump_force)
+		
+
 	var space_state := self.get_viewport().world_3d.direct_space_state
 	var origin : Vector3 = body.get_transform().origin
 	var query := PhysicsRayQueryParameters3D.create(origin, origin - (Vector3.UP))
@@ -23,24 +34,33 @@ func _handle_movement_state(movement: Components.Movement, body: Components.Phys
 	else:
 		movement.state = Components.MovState.Idle
 
-	# print(movement.state)
 	if (movement.state == Components.MovState.Airbone):
 		# Increase the gravity of our body
 		body.set_gravity_scale(5)
 	else:
 		body.set_gravity_scale(1)
 
+
+	# TODO: Move to independent function when needed
+	body.apply_force(movement.direction * movement.speed)
 	pass
 
 func _handle_dash(delta: float,  movement: Components.Movement, body: Components.PhysicsBody, dash_info: Components.Dash):
 	# Get the elapsed time
-	if (dash_info.curr_time >= dash_info.get_end_time()):
+	var curr_vel : Vector3 = body.get_velocity()
+	if (dash_info.curr_dashing_time >= dash_info.get_end_time()):
+		# If the dash feels too "slippery" uncomment these
+		curr_vel.x = 0
+		curr_vel.z = 0
+		body.set_velocity(curr_vel)
+
+		# Reset dash info
+		dash_info.curr_dashing_time = 0
 		movement.state = Components.MovState.Idle
 		return
 	movement.state = Components.MovState.Dashing
 
-	dash_info.curr_time += delta
-	var curr_vel : Vector3 = body.get_velocity()
+	dash_info.curr_dashing_time += delta
 	var dash_vel := dash_info.direction * dash_info.speed
 	
 	# Preserve gravity and jumping
@@ -49,16 +69,18 @@ func _handle_dash(delta: float,  movement: Components.Movement, body: Components
 
 func _physics_process(delta: float) -> void:
 	# TODO: Process this by controller component
-	self.players_query.each(func _move_bodies(components: Array):
+	self.players_query.each(func _move_bodies(_entity: RID, components: Array):
 		var movement: Components.Movement = components[0]
 		var body: Components.PhysicsBody = components[1]
 		var controller: Components.Controller = components[2]
 		var dash: Components.Dash = components[3]
 
+		if (dash.cooldown_time > 0):
+			dash.cooldown_time -= delta
+
 		# Grounded will be if the velocity on the Y component is not close to 0
 		var xform : Transform3D = body.get_transform()
 		var input := Vector3.ZERO
-		var impulse := Vector3.ZERO
 		if (Input.is_key_pressed(controller.forward_key)):
 			input -= xform.basis.z
 		if (Input.is_key_pressed(controller.backward_key)):
@@ -69,19 +91,16 @@ func _physics_process(delta: float) -> void:
 			input += xform.basis.x
 
 		if (Input.is_key_pressed(controller.jump_key) && movement.state != Components.MovState.Airbone):
-			impulse = Vector3.UP
+			movement.state = Components.MovState.Jumped
 
 		if (input != Vector3.ZERO && movement.state != Components.MovState.Dashing):
 			dash.direction = input
 
-		if (Input.is_key_pressed(controller.dash_key) && movement.state != Components.MovState.Dashing):
-			_handle_dash(delta, movement, body, dash)
-
-		_handle_movement_state(movement, body)
+		if (Input.is_key_pressed(controller.dash_key) && movement.state != Components.MovState.Dashing && dash.cooldown_time <= 0):
+			movement.state = Components.MovState.Dashing
 
 		movement.direction = input.normalized()
-		body.apply_force(movement.direction * movement.speed)
-		body.apply_impulse(impulse * movement.jump_force)
-		pass
+
+		_handle_movement_state(delta, movement, body, dash)
 	)
 	pass

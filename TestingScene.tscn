@@ -52,14 +52,35 @@ metadata/_custom_type_script = "uid://c3cx1tdqnfacf"
 script = ExtResource("5_5gf4p")
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.784528, 0.620094, 0, -0.620094, 0.784528, 0, 4.44979, 5.73055)
+transform = Transform3D(1, 0, 0, 0, 0.99872, 0.050593, 0, -0.050593, 0.99872, 0, 4.44979, 9.18153)
 environment = SubResource("Environment_5gf4p")
+fov = 45.0
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.948379, 0.317139, 0, -0.317139, 0.948379, 0, 0, 0)
 
 [node name="CSGBox3D" type="CSGBox3D" parent="."]
-transform = Transform3D(10.9948, 0, 0, 0, 0.169577, 0, 0, 0, 11.6443, 0, -0.986538, -2.30784)
+transform = Transform3D(34.2744, 0, 0, 0, 0.169577, 0, 0, 0, 27.1921, 0, -0.986538, -2.30784)
+use_collision = true
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="."]
+transform = Transform3D(9.53674e-07, 0.169577, 0, -34.2744, 0, 0, 0, 0, 27.1921, 15, -0.986538, -2.30784)
+use_collision = true
+material = ExtResource("5_5gf4p")
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="."]
+transform = Transform3D(9.53674e-07, 0.169577, 0, -34.2744, 0, 0, 0, 0, 27.1921, -17, -0.986538, -2.30784)
+use_collision = true
+material = ExtResource("5_5gf4p")
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="."]
+transform = Transform3D(34.2744, 0, 0, 1.91971e-14, -7.41245e-09, -27.1921, 9.53674e-07, 0.169577, -1.1886e-06, 0, 3.01346, -15.3078)
+use_collision = true
+material = ExtResource("5_5gf4p")
+
+[node name="CSGBox3D5" type="CSGBox3D" parent="."]
+transform = Transform3D(34.2744, 0, 0, 1.91971e-14, -7.41245e-09, -27.1921, 9.53674e-07, 0.169577, -1.1886e-06, 0, 3.01346, 11.6922)
+material_override = ExtResource("5_5gf4p")
 use_collision = true
 collision_layer = 3
 collision_mask = 3
