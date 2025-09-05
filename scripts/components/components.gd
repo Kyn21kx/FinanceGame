@@ -128,8 +128,8 @@ class Collector:
 	var pickup_range : float
 
 	func get_in_inventory(collectable: CollectableType) -> float:
-		if inventory.has(Collectable):
-			return inventory[collectable]
+		if self.inventory.has(collectable):
+			return self.inventory[collectable]
 		
 		return 0
 	
