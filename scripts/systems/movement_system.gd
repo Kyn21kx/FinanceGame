@@ -69,7 +69,7 @@ func _handle_dash(delta: float,  movement: Components.Movement, body: Components
 
 func _physics_process(delta: float) -> void:
 	# TODO: Process this by controller component
-	self.players_query.each(func _move_bodies(components: Array):
+	self.players_query.each(func _move_bodies(_entity: RID, components: Array):
 		var movement: Components.Movement = components[0]
 		var body: Components.PhysicsBody = components[1]
 		var controller: Components.Controller = components[2]

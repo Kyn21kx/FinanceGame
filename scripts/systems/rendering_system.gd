@@ -17,7 +17,7 @@ func _ready() -> void:
 	
 
 func _physics_process(_delta: float) -> void:
-	self.renderable_bodies_query.each(func render_physic_meshes(components: Array):
+	self.renderable_bodies_query.each(func render_physic_meshes(_entity: RID, components: Array):
 		# Body, Mesh
 		var body : Components.PhysicsBody = components[0]
 		var mesh : Components.MeshComponent = components[1]
@@ -28,7 +28,7 @@ func _physics_process(_delta: float) -> void:
 	pass
 
 func _process(_delta: float) -> void:
-	self.renderable_non_physics_query.each(func render_non_physic_meshes(components: Array):
+	self.renderable_non_physics_query.each(func render_non_physic_meshes(_entity: RID, components: Array):
 		# Xform, Mesh
 		var xform : Transform3D = components[0]
 		var mesh: Components.MeshComponent = components[1]
