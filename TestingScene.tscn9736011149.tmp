@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://17diqbcutb3p"]
+[gd_scene load_steps=13 format=3 uid="uid://17diqbcutb3p"]
 
 [ext_resource type="Script" uid="uid://b2271ootsknqm" path="res://scripts/systems/movement_system.gd" id="1_dc2kq"]
 [ext_resource type="Script" uid="uid://bwqpb3d10qxyp" path="res://scripts/systems/entity_spawn_system.gd" id="1_ypt0w"]
@@ -11,15 +11,9 @@ material = ExtResource("2_6mnxl")
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_5gf4p"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5gf4p"]
-albedo_color = Color(1, 0.843137, 0, 1)
+[sub_resource type="SphereMesh" id="SphereMesh_5gf4p"]
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_7hjm2"]
-material = SubResource("StandardMaterial3D_5gf4p")
-height = 0.2
-
-[sub_resource type="CylinderShape3D" id="CylinderShape3D_5o5w8"]
-height = 0.2
+[sub_resource type="SphereShape3D" id="SphereShape3D_7hjm2"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6mnxl"]
 
@@ -36,8 +30,8 @@ sky = SubResource("Sky_ypt0w")
 script = ExtResource("1_ypt0w")
 player_model = SubResource("CylinderMesh_ypt0w")
 player_shape = SubResource("CylinderShape3D_5gf4p")
-coin_model = SubResource("CylinderMesh_7hjm2")
-coin_shape = SubResource("CylinderShape3D_5o5w8")
+coin_model = SubResource("SphereMesh_5gf4p")
+coin_shape = SubResource("SphereShape3D_7hjm2")
 
 [node name="MovementSystem" type="Node" parent="."]
 script = ExtResource("1_dc2kq")
@@ -62,28 +56,3 @@ transform = Transform3D(10.9948, 0, 0, 0, 0.169577, 0, 0, 0, 11.6443, 0, -0.9865
 use_collision = true
 collision_layer = 3
 collision_mask = 3
-
-[node name="CountDisplay" type="Label" parent="."]
-offset_left = 10.0
-offset_top = 10.0
-offset_right = 71.0
-offset_bottom = 33.0
-text = "Coins: 0"
-
-[node name="Button" type="Button" parent="."]
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -105.0
-offset_top = -41.0
-offset_right = -10.0
-offset_bottom = -10.0
-grow_horizontal = 0
-grow_vertical = 0
-size_flags_horizontal = 8
-size_flags_vertical = 8
-text = "spawn coin"
-
-[connection signal="pressed" from="Button" to="EntitySpawnSystem" method="_on_button_pressed"]

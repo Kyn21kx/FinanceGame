@@ -1,6 +1,7 @@
 class_name Components
 
 enum MovState { Idle, Airbone, Dashing }
+enum CollectableType { Coin }
 
 class PhysicsBody:
 	var body_id: RID
@@ -43,6 +44,12 @@ class PhysicsBody:
 
 	func lock_axis(axis: int) -> void:
 		PhysicsServer3D.body_set_axis_lock(self.body_id, axis, true)
+	
+	func set_collision_layer(layer: int) -> void:
+		return PhysicsServer3D.body_set_collision_layer(self.body_id, layer)
+	
+	func set_collision_mask(mask: int) -> void:
+		return PhysicsServer3D.body_set_collision_mask(self.body_id, mask)
 	
 	static func get_type_name() -> StringName:
 		return "PhysicsBody"
@@ -88,7 +95,7 @@ class Dash:
 	
 	static func get_type_name() -> StringName:
 		return "Dash"
-	
+
 
 class Controller:
 	# TODO: Maybe these could be functions or actions to make sure it works for controllers
@@ -104,3 +111,27 @@ class Controller:
 	
 	static func get_type_name() -> StringName:
 		return "Controller"
+
+
+class Collectable:
+	var weight: float
+	var type: CollectableType = CollectableType.Coin 
+	
+	static func get_type_name() -> StringName:
+		return "Collectable"
+
+
+class Collector:
+	var inventory : Dictionary
+	var attraction_range : float
+	var attraction_factor : float
+	var pickup_range : float
+
+	func get_collected_amount(collectable: CollectableType) -> float:
+		if inventory.has(Collectable):
+			return inventory[collectable]
+		
+		return 0
+
+	static func get_type_name() -> StringName:
+		return "Collector"
