@@ -36,6 +36,7 @@ sky = SubResource("Sky_ypt0w")
 script = ExtResource("1_ypt0w")
 player_model = SubResource("CylinderMesh_ypt0w")
 player_shape = SubResource("CylinderShape3D_5gf4p")
+player_layer = 1
 coin_model = SubResource("CylinderMesh_7hjm2")
 coin_shape = SubResource("CylinderShape3D_5o5w8")
 

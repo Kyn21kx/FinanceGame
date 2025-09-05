@@ -127,11 +127,17 @@ class Collector:
 	var attraction_factor : float
 	var pickup_range : float
 
-	func get_collected_amount(collectable: CollectableType) -> float:
+	func get_in_inventory(collectable: CollectableType) -> float:
 		if inventory.has(Collectable):
 			return inventory[collectable]
 		
 		return 0
-
+	
+	func add_to_inventory(collectable_type: CollectableType, amount : float = 1) -> void:
+		self.inventory[collectable_type] = self.get_in_inventory(collectable_type) + amount
+	
+	func add_collectable_to_inventory(collectable: Collectable) -> void:
+		self.add_to_inventory(collectable.type, 1)
+	
 	static func get_type_name() -> StringName:
 		return "Collector"

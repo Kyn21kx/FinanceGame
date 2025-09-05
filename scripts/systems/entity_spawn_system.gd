@@ -9,13 +9,13 @@ var player_model: Mesh
 var player_shape: Shape3D
 
 @export
+var player_layer: int
+
+@export
 var coin_model: Mesh
 
 @export
 var coin_shape: Shape3D
-
-@export
-var coin_spawn_area: Area3D
 
 func _ready() -> void:
 	# Spawn the player at start with its default components
@@ -26,11 +26,9 @@ func _ready() -> void:
 	self._make_coin(Vector3(4, 0, 1))
 	self._make_coin(Vector3(1.5, 0, 1.5))
 	self._make_coin(Vector3(3.5, 0, 1.5))
-	
 	self._make_coin(Vector3(-2, 0, -2))
 	self._make_coin(Vector3(-2, 0, -2.5))
 	self._make_coin(Vector3(-2.5, 0, -3))
-	
 	self._make_coin(Vector3(-1, 0, -3.5))
 	
 	pass
@@ -65,7 +63,7 @@ func _make_player() -> void:
 	
 	var collector_comp := Components.Collector.new()
 	collector_comp.attraction_range = 2
-	collector_comp.attraction_factor = 1
+	collector_comp.attraction_factor = 7
 	collector_comp.pickup_range = 1
 	FlecsScene.entity_add_component_instance(player, Components.Collector.get_type_name(), collector_comp)
 	pass
@@ -76,11 +74,10 @@ func _make_coin(position: Vector3) -> void:
 	FlecsScene.entity_add_component_instance(coin, Components.MeshComponent.get_type_name(), mesh_comp)
 	
 	var physics_comp := Components.PhysicsBody.new(self.coin_shape, self.get_viewport().world_3d)
-	physics_comp.set_collision_layer(0)
+	physics_comp.set_collision_layer(~player_layer)
 	physics_comp.set_collision_mask(2)
 	var transform : Transform3D = physics_comp.get_transform()
 	transform.origin = position # set entity position on the world
-	# transform.basis = Basis(Vector3.BACK, deg_to_rad(90)) 
 	transform.basis = Basis(Vector3.LEFT, deg_to_rad(90)) # rotate the coin so that it is upside
 	physics_comp.set_transform(transform)
 	physics_comp.lock_axis(PhysicsServer3D.BODY_AXIS_ANGULAR_X | PhysicsServer3D.BODY_AXIS_ANGULAR_Y | PhysicsServer3D.BODY_AXIS_ANGULAR_Z)
@@ -94,6 +91,7 @@ func _make_coin(position: Vector3) -> void:
 func _process(delta: float) -> void:
 	pass
 
+# this is only here for debug, feel free to delete it at any time
 func _on_button_pressed() -> void:
 	var floor : CSGBox3D = $"../CSGBox3D"
 	
