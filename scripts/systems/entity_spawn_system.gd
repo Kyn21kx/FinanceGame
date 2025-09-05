@@ -90,7 +90,7 @@ func _make_coin(position: Vector3) -> void:
 	FlecsScene.entity_add_component_instance(coin, Components.MeshComponent.get_type_name(), mesh_comp)
 	
 	var physics_comp := Components.PhysicsBody.new(self.coin_shape, self.get_viewport().world_3d)
-	physics_comp.set_collision_layer(~player_layer)
+	physics_comp.set_collision_layer(1)
 	physics_comp.set_collision_mask(2)
 	var transform : Transform3D = physics_comp.get_transform()
 	transform.origin = position # set entity position on the world

@@ -1,6 +1,6 @@
 class_name Components
 
-enum MovState { Idle, Jumped, Dashing }
+enum MovState { Idle, Airbone, Jumped, Dashing }
 enum CollectableType { Coin }
 
 class PhysicsBody:
