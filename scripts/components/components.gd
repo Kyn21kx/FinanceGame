@@ -1,6 +1,7 @@
 class_name Components
 
-enum MovState { Idle, Jumped, Airbone, Dashing }
+enum MovState { Idle, Airbone, Jumped, Dashing }
+enum CollectableType { Coin }
 
 class PhysicsBody:
 	var body_id: RID
@@ -42,6 +43,12 @@ class PhysicsBody:
 	func lock_axis(axis: int) -> void:
 		PhysicsServer3D.body_set_axis_lock(self.body_id, axis, true)
 	
+	func set_collision_layer(layer: int) -> void:
+		return PhysicsServer3D.body_set_collision_layer(self.body_id, layer)
+	
+	func set_collision_mask(mask: int) -> void:
+		return PhysicsServer3D.body_set_collision_mask(self.body_id, mask)
+
 	func set_bounciness(bounciness: float) -> void:
 		PhysicsServer3D.body_set_param(self.body_id, PhysicsServer3D.BODY_PARAM_BOUNCE, bounciness)
 	
@@ -93,7 +100,7 @@ class Dash:
 	
 	static func get_type_name() -> StringName:
 		return "Dash"
-	
+
 
 class Controller:
 	# TODO: Maybe these could be functions or actions to make sure it works for controllers
@@ -110,3 +117,33 @@ class Controller:
 	
 	static func get_type_name() -> StringName:
 		return "Controller"
+
+
+class Collectable:
+	var weight: float
+	var type: CollectableType = CollectableType.Coin 
+	
+	static func get_type_name() -> StringName:
+		return "Collectable"
+
+
+class Collector:
+	var inventory : Dictionary
+	var attraction_range : float
+	var attraction_factor : float
+	var pickup_range : float
+
+	func get_in_inventory(collectable: CollectableType) -> float:
+		if self.inventory.has(collectable):
+			return self.inventory[collectable]
+		
+		return 0
+	
+	func add_to_inventory(collectable_type: CollectableType, amount : float = 1) -> void:
+		self.inventory[collectable_type] = self.get_in_inventory(collectable_type) + amount
+	
+	func add_collectable_to_inventory(collectable: Collectable) -> void:
+		self.add_to_inventory(collectable.type, 1)
+	
+	static func get_type_name() -> StringName:
+		return "Collector"

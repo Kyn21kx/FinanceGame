@@ -1,15 +1,26 @@
-[gd_scene load_steps=11 format=3 uid="uid://17diqbcutb3p"]
+[gd_scene load_steps=15 format=3 uid="uid://17diqbcutb3p"]
 
 [ext_resource type="Script" uid="uid://b2271ootsknqm" path="res://scripts/systems/movement_system.gd" id="1_dc2kq"]
 [ext_resource type="Script" uid="uid://bwqpb3d10qxyp" path="res://scripts/systems/entity_spawn_system.gd" id="1_ypt0w"]
 [ext_resource type="Material" uid="uid://dfywvxmc6ljyy" path="res://materials/test_player.tres" id="2_6mnxl"]
 [ext_resource type="Script" uid="uid://c3cx1tdqnfacf" path="res://scripts/systems/rendering_system.gd" id="2_iyuba"]
-[ext_resource type="Material" uid="uid://c7fj3iv3ggbrm" path="res://materials/WallMaterial.tres" id="5_5gf4p"]
+[ext_resource type="Script" uid="uid://cl4srd40jb55t" path="res://scripts/systems/pick_up_system.gd" id="5_5gf4p"]
+[ext_resource type="Material" uid="uid://c7fj3iv3ggbrm" path="res://materials/WallMaterial.tres" id="6_7hjm2"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_ypt0w"]
 material = ExtResource("2_6mnxl")
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_5gf4p"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5gf4p"]
+albedo_color = Color(1, 0.843137, 0, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_7hjm2"]
+material = SubResource("StandardMaterial3D_5gf4p")
+height = 0.2
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_5o5w8"]
+height = 0.2
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6mnxl"]
 
@@ -26,6 +37,9 @@ sky = SubResource("Sky_ypt0w")
 script = ExtResource("1_ypt0w")
 player_model = SubResource("CylinderMesh_ypt0w")
 player_shape = SubResource("CylinderShape3D_5gf4p")
+player_layer = 2
+coin_model = SubResource("CylinderMesh_7hjm2")
+coin_shape = SubResource("CylinderShape3D_5o5w8")
 
 [node name="MovementSystem" type="Node" parent="."]
 script = ExtResource("1_dc2kq")
@@ -35,6 +49,9 @@ metadata/_custom_type_script = "uid://b2271ootsknqm"
 script = ExtResource("2_iyuba")
 metadata/_custom_type_script = "uid://c3cx1tdqnfacf"
 
+[node name="PickUpSystem" type="Node" parent="."]
+script = ExtResource("5_5gf4p")
+
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.99872, 0.050593, 0, -0.050593, 0.99872, 0, 4.44979, 9.18153)
 environment = SubResource("Environment_5gf4p")
@@ -43,26 +60,56 @@ fov = 45.0
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.948379, 0.317139, 0, -0.317139, 0.948379, 0, 0, 0)
 
-[node name="CSGBox3D" type="CSGBox3D" parent="."]
+[node name="CountDisplay" type="Label" parent="."]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 71.0
+offset_bottom = 33.0
+text = "Coins: 0"
+
+[node name="Button" type="Button" parent="."]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -105.0
+offset_top = -41.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 0
+grow_vertical = 0
+size_flags_horizontal = 8
+size_flags_vertical = 8
+text = "spawn coin"
+
+[node name="Environment" type="Node" parent="."]
+
+[node name="CSGBox3D" type="CSGBox3D" parent="Environment"]
 transform = Transform3D(34.2744, 0, 0, 0, 0.169577, 0, 0, 0, 27.1921, 0, -0.986538, -2.30784)
 use_collision = true
+collision_layer = 3
+collision_mask = 15
 
-[node name="CSGBox3D2" type="CSGBox3D" parent="."]
+[node name="CSGBox3D2" type="CSGBox3D" parent="Environment"]
 transform = Transform3D(9.53674e-07, 0.169577, 0, -34.2744, 0, 0, 0, 0, 27.1921, 15, -0.986538, -2.30784)
+material_override = ExtResource("6_7hjm2")
 use_collision = true
-material = ExtResource("5_5gf4p")
 
-[node name="CSGBox3D4" type="CSGBox3D" parent="."]
+[node name="CSGBox3D4" type="CSGBox3D" parent="Environment"]
 transform = Transform3D(9.53674e-07, 0.169577, 0, -34.2744, 0, 0, 0, 0, 27.1921, -17, -0.986538, -2.30784)
+material_override = ExtResource("6_7hjm2")
 use_collision = true
-material = ExtResource("5_5gf4p")
 
-[node name="CSGBox3D3" type="CSGBox3D" parent="."]
+[node name="CSGBox3D3" type="CSGBox3D" parent="Environment"]
 transform = Transform3D(34.2744, 0, 0, 1.91971e-14, -7.41245e-09, -27.1921, 9.53674e-07, 0.169577, -1.1886e-06, 0, 3.01346, -15.3078)
+material_override = ExtResource("6_7hjm2")
 use_collision = true
-material = ExtResource("5_5gf4p")
 
-[node name="CSGBox3D5" type="CSGBox3D" parent="."]
+[node name="CSGBox3D5" type="CSGBox3D" parent="Environment"]
 transform = Transform3D(34.2744, 0, 0, 1.91971e-14, -7.41245e-09, -27.1921, 9.53674e-07, 0.169577, -1.1886e-06, 0, 3.01346, 11.6922)
-material_override = ExtResource("5_5gf4p")
+material_override = ExtResource("6_7hjm2")
 use_collision = true
+collision_mask = 3
+
+[connection signal="pressed" from="Button" to="EntitySpawnSystem" method="_on_button_pressed"]
