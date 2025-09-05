@@ -13,6 +13,7 @@ func _ready() -> void:
 func _handle_movement_state(delta: float, movement: Components.Movement, body: Components.PhysicsBody, dash: Components.Dash):
 
 	if (movement.state == Components.MovState.Dashing):
+		dash.cooldown_time = dash.DASH_COOLDOWN
 		_handle_dash(delta, movement, body, dash)
 		return
 	# TODO: Check airbone dashing
@@ -47,19 +48,19 @@ func _handle_movement_state(delta: float, movement: Components.Movement, body: C
 func _handle_dash(delta: float,  movement: Components.Movement, body: Components.PhysicsBody, dash_info: Components.Dash):
 	# Get the elapsed time
 	var curr_vel : Vector3 = body.get_velocity()
-	if (dash_info.curr_time >= dash_info.get_end_time()):
+	if (dash_info.curr_dashing_time >= dash_info.get_end_time()):
 		# If the dash feels too "slippery" uncomment these
 		curr_vel.x = 0
 		curr_vel.z = 0
 		body.set_velocity(curr_vel)
 
 		# Reset dash info
-		dash_info.curr_time = 0
+		dash_info.curr_dashing_time = 0
 		movement.state = Components.MovState.Idle
 		return
 	movement.state = Components.MovState.Dashing
 
-	dash_info.curr_time += delta
+	dash_info.curr_dashing_time += delta
 	var dash_vel := dash_info.direction * dash_info.speed
 	
 	# Preserve gravity and jumping
@@ -73,6 +74,9 @@ func _physics_process(delta: float) -> void:
 		var body: Components.PhysicsBody = components[1]
 		var controller: Components.Controller = components[2]
 		var dash: Components.Dash = components[3]
+
+		if (dash.cooldown_time > 0):
+			dash.cooldown_time -= delta
 
 		# Grounded will be if the velocity on the Y component is not close to 0
 		var xform : Transform3D = body.get_transform()
@@ -92,7 +96,7 @@ func _physics_process(delta: float) -> void:
 		if (input != Vector3.ZERO && movement.state != Components.MovState.Dashing):
 			dash.direction = input
 
-		if (Input.is_key_pressed(controller.dash_key) && movement.state != Components.MovState.Dashing):
+		if (Input.is_key_pressed(controller.dash_key) && movement.state != Components.MovState.Dashing && dash.cooldown_time <= 0):
 			movement.state = Components.MovState.Dashing
 
 		movement.direction = input.normalized()

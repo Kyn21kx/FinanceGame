@@ -8,10 +8,12 @@ func _ready() -> void:
 	# The query for physics objects
 	self.renderable_bodies_query.with_and_register(Components.PhysicsBody.get_type_name())
 	self.renderable_bodies_query.with_and_register(Components.MeshComponent.get_type_name())
+	self.renderable_bodies_query.cache_mode(Query.Cached)
 
 	# The query for normal transform bound objects
 	self.renderable_non_physics_query.with_and_register("Transform3D")
 	self.renderable_non_physics_query.with_and_register(Components.MeshComponent.get_type_name())
+	self.renderable_non_physics_query.cache_mode(Query.Cached)
 	
 
 func _physics_process(_delta: float) -> void:

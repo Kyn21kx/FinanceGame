@@ -8,9 +8,26 @@ var player_model: Mesh
 @export
 var player_shape: Shape3D
 
+var ball_mesh := SphereMesh.new()
+
+var ball_shape := SphereShape3D.new()
+
 func _ready() -> void:
 	# Spawn the player at start with its default components
 	self._make_player()
+	self._make_ball()
+
+
+func _make_ball() -> void:
+	var ball : RID = FlecsScene.create_raw_entity_with_name("Ball")
+	var mesh_comp := Components.MeshComponent.new(ball_mesh, self.get_viewport().world_3d)
+	var xform := Transform3D(Basis(), Vector3(0, 5, -3))
+	var body := Components.PhysicsBody.new(ball_shape, self.get_viewport().world_3d, xform)
+	body.set_bounciness(0.7)
+
+	FlecsScene.entity_add_component_instance(ball, Components.PhysicsBody.get_type_name(), body)
+	FlecsScene.entity_add_component_instance(ball, Components.MeshComponent.get_type_name(), mesh_comp)
+
 
 func _make_player() -> void:
 	var player : RID = FlecsScene.create_raw_entity_with_name("Player")

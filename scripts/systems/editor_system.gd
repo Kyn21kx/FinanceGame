@@ -50,7 +50,8 @@ func _on_entity_added(entity: RID, entity_name: String):
 	var entity_button := Button.new()
 	entity_button.text = str(entity) + " - " + entity_name
 	self.entities_panel.add_child(entity_button)
-
+	# TODO: Maybe do this every few minutes/big changes instead of every change
+	# FlecsScene.save_scene("res://world.json")
 
 
 func on_component_selected(item: int):
