@@ -100,17 +100,28 @@ func _handle_input(_entity: RID, components: Array):
 
 	input = input.normalized()
 
+
 	if (input != Vector3.ZERO && movement.state != Components.MovState.Dashing):
 		dash.direction = input
+		DebugDraw3D.draw_arrow(xform.origin, xform.origin + dash.direction * 2)
 		# Check if our direction is close enough to the bag and magnetize the dash towards it
 		self.bag_query.each(func iter_bag(_bag_entity: RID, bag_components: Array):
 			var bag_body : Components.PhysicsBody = bag_components[1]
-			var direction_to_bag : Vector3 = (bag_body.get_transform().origin - xform.origin).normalized()
-			var inputDotBag : float = input.dot(direction_to_bag)
-			print(inputDotBag)
+			var bag_position : Vector3 = bag_body.get_transform().origin
+
+			# First check if we are within range
+			var close_to_bag_distance_sqr : float = dash.max_distance * dash.max_distance
+			var distance_to_bag_sqr : float = xform.origin.distance_squared_to(bag_position)
+			if (distance_to_bag_sqr > close_to_bag_distance_sqr):
+				return
+
+			var direction_to_bag : Vector3 = (bag_position - xform.origin).normalized()
+			var input_dot_bag : float = input.dot(direction_to_bag)
+			DebugDraw3D.draw_arrow(bag_position, bag_position + direction_to_bag, Color.RED * input_dot_bag)
+
 			# if it's close to 1, magnetize
-			const threshold : float = 0.94
-			if inputDotBag >= threshold:
+			const threshold : float = 0.85
+			if input_dot_bag >= threshold:
 				dash.direction = direction_to_bag
 		)
 

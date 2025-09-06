@@ -44,7 +44,7 @@ func _make_ball() -> void:
 	var xform := Transform3D(Basis(), Vector3(0, 5, -3))
 	var body := Components.PhysicsBody.new(ball_shape, self.get_viewport().world_3d, xform)
 	body.set_bounciness(0.7)
-	body.set_gravity_scale(0.3)
+	body.set_gravity_scale(0.1)
 	var bag_comp := Components.Bag.new()
 
 	FlecsScene.entity_add_component_instance(ball, Components.PhysicsBody.get_type_name(), body)
