@@ -44,13 +44,20 @@ func _make_ball() -> void:
 	var xform := Transform3D(Basis(), Vector3(0, 5, -3))
 	var body := Components.PhysicsBody.new(ball_shape, self.get_viewport().world_3d, xform)
 	body.set_bounciness(0.7)
+	body.set_gravity_scale(0.3)
+	var bag_comp := Components.Bag.new()
 
 	FlecsScene.entity_add_component_instance(ball, Components.PhysicsBody.get_type_name(), body)
 	FlecsScene.entity_add_component_instance(ball, Components.MeshComponent.get_type_name(), mesh_comp)
+	FlecsScene.entity_add_component_instance(ball, Components.Bag.get_type_name(), bag_comp)
 
 
 func _make_player() -> void:
 	var player : RID = FlecsScene.create_raw_entity_with_name("Player")
+
+	var player_comp := Components.Player.new()
+	FlecsScene.entity_add_component_instance(player, Components.Player.get_type_name(), player_comp)
+
 	var mesh_comp := Components.MeshComponent.new(self.player_model, self.get_viewport().world_3d)
 	FlecsScene.entity_add_component_instance(player, Components.MeshComponent.get_type_name(), mesh_comp)
 	

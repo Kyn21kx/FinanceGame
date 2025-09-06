@@ -147,3 +147,14 @@ class Collector:
 	
 	static func get_type_name() -> StringName:
 		return "Collector"
+
+class Player:
+
+	static func get_type_name() -> StringName:
+		return "Player"
+
+
+class Bag:
+	
+	static func get_type_name() -> StringName:
+		return "Bag"

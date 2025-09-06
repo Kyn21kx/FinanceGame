@@ -2,13 +2,23 @@ extends Node
 class_name MovementSystem
 
 var players_query := Query.new()
+var input_comps_query := Query.new()
+var bag_query := Query.new()
 
 func _ready() -> void:
+	# Will update the transforms based on the directions and state machine
 	self.players_query.with_and_register(Components.Movement.get_type_name())
 	self.players_query.with_and_register(Components.PhysicsBody.get_type_name())
-	self.players_query.with_and_register(Components.Controller.get_type_name())
 	self.players_query.with_and_register(Components.Dash.get_type_name())
-	pass
+	
+	# Will set the directions of eveything
+	self.input_comps_query.with_and_register(Components.Controller.get_type_name())
+	self.input_comps_query.with_and_register(Components.Movement.get_type_name())
+	self.input_comps_query.with_and_register(Components.Dash.get_type_name())
+	self.input_comps_query.with_and_register(Components.PhysicsBody.get_type_name())
+
+	self.bag_query.with_and_register(Components.Bag.get_type_name())
+	self.bag_query.with_and_register(Components.PhysicsBody.get_type_name())
 
 func _handle_movement_state(delta: float, movement: Components.Movement, body: Components.PhysicsBody, dash: Components.Dash):
 
@@ -67,40 +77,63 @@ func _handle_dash(delta: float,  movement: Components.Movement, body: Components
 	dash_vel.y = curr_vel.y
 	body.set_velocity(dash_vel)
 
+
+func _handle_input(_entity: RID, components: Array):
+	var controller: Components.Controller = components[0]
+	var movement: Components.Movement = components[1]
+	var dash: Components.Dash = components[2]
+	var body : Components.PhysicsBody = components[3]
+	
+	var xform : Transform3D = body.get_transform()
+	var input := Vector3.ZERO
+	if (Input.is_key_pressed(controller.forward_key)):
+		input -= xform.basis.z
+	if (Input.is_key_pressed(controller.backward_key)):
+		input += xform.basis.z
+	if (Input.is_key_pressed(controller.left_key)):
+		input -= xform.basis.x
+	if (Input.is_key_pressed(controller.right_key)):
+		input += xform.basis.x
+
+	if (Input.is_key_pressed(controller.jump_key) && movement.state != Components.MovState.Airbone):
+		movement.state = Components.MovState.Jumped
+
+	input = input.normalized()
+
+	if (input != Vector3.ZERO && movement.state != Components.MovState.Dashing):
+		dash.direction = input
+		# Check if our direction is close enough to the bag and magnetize the dash towards it
+		self.bag_query.each(func iter_bag(_bag_entity: RID, bag_components: Array):
+			var bag_body : Components.PhysicsBody = bag_components[1]
+			var direction_to_bag : Vector3 = (bag_body.get_transform().origin - xform.origin).normalized()
+			var inputDotBag : float = input.dot(direction_to_bag)
+			print(inputDotBag)
+			# if it's close to 1, magnetize
+			const threshold : float = 0.94
+			if inputDotBag >= threshold:
+				dash.direction = direction_to_bag
+		)
+
+
+	if (Input.is_key_pressed(controller.dash_key) && movement.state != Components.MovState.Dashing && dash.cooldown_time <= 0):
+		movement.state = Components.MovState.Dashing
+
+	movement.direction = input
+
+func _process(_delta: float) -> void:
+	self.input_comps_query.each(_handle_input)
+
 func _physics_process(delta: float) -> void:
 	# TODO: Process this by controller component
 	self.players_query.each(func _move_bodies(_entity: RID, components: Array):
 		var movement: Components.Movement = components[0]
 		var body: Components.PhysicsBody = components[1]
-		var controller: Components.Controller = components[2]
-		var dash: Components.Dash = components[3]
+		var dash: Components.Dash = components[2]
 
 		if (dash.cooldown_time > 0):
 			dash.cooldown_time -= delta
 
-		# Grounded will be if the velocity on the Y component is not close to 0
-		var xform : Transform3D = body.get_transform()
-		var input := Vector3.ZERO
-		if (Input.is_key_pressed(controller.forward_key)):
-			input -= xform.basis.z
-		if (Input.is_key_pressed(controller.backward_key)):
-			input += xform.basis.z
-		if (Input.is_key_pressed(controller.left_key)):
-			input -= xform.basis.x
-		if (Input.is_key_pressed(controller.right_key)):
-			input += xform.basis.x
-
-		if (Input.is_key_pressed(controller.jump_key) && movement.state != Components.MovState.Airbone):
-			movement.state = Components.MovState.Jumped
-
-		if (input != Vector3.ZERO && movement.state != Components.MovState.Dashing):
-			dash.direction = input
-
-		if (Input.is_key_pressed(controller.dash_key) && movement.state != Components.MovState.Dashing && dash.cooldown_time <= 0):
-			movement.state = Components.MovState.Dashing
-
-		movement.direction = input.normalized()
-
+		
 		_handle_movement_state(delta, movement, body, dash)
 	)
 	pass
