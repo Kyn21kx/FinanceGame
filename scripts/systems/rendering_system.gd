@@ -4,6 +4,7 @@ class_name RenderingSystem
 var renderable_bodies_query := Query.new()
 var renderable_non_physics_query := Query.new()
 
+# TODO: process this in parallel
 func _ready() -> void:
 	# The query for physics objects
 	self.renderable_bodies_query.with_and_register(Components.PhysicsBody.get_type_name())

@@ -1,10 +1,11 @@
-[gd_scene load_steps=15 format=3 uid="uid://17diqbcutb3p"]
+[gd_scene load_steps=16 format=3 uid="uid://17diqbcutb3p"]
 
 [ext_resource type="Script" uid="uid://b2271ootsknqm" path="res://scripts/systems/movement_system.gd" id="1_dc2kq"]
 [ext_resource type="Script" uid="uid://bwqpb3d10qxyp" path="res://scripts/systems/entity_spawn_system.gd" id="1_ypt0w"]
 [ext_resource type="Material" uid="uid://dfywvxmc6ljyy" path="res://materials/test_player.tres" id="2_6mnxl"]
 [ext_resource type="Script" uid="uid://c3cx1tdqnfacf" path="res://scripts/systems/rendering_system.gd" id="2_iyuba"]
 [ext_resource type="Script" uid="uid://cl4srd40jb55t" path="res://scripts/systems/pick_up_system.gd" id="5_5gf4p"]
+[ext_resource type="Material" uid="uid://crkr2yoi6vwmh" path="res://materials/floor_test.tres" id="6_5o5w8"]
 [ext_resource type="Material" uid="uid://c7fj3iv3ggbrm" path="res://materials/WallMaterial.tres" id="6_7hjm2"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_ypt0w"]
@@ -53,7 +54,7 @@ metadata/_custom_type_script = "uid://c3cx1tdqnfacf"
 script = ExtResource("5_5gf4p")
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.99872, 0.050593, 0, -0.050593, 0.99872, 0, 4.44979, 9.18153)
+transform = Transform3D(1, 0, 0, 0, 0.67816, 0.734915, 0, -0.734915, 0.67816, 0, 20, 12)
 environment = SubResource("Environment_5gf4p")
 fov = 45.0
 
@@ -87,6 +88,7 @@ text = "spawn coin"
 
 [node name="CSGBox3D" type="CSGBox3D" parent="Environment"]
 transform = Transform3D(34.2744, 0, 0, 0, 0.169577, 0, 0, 0, 27.1921, 0, -0.986538, -2.30784)
+material_override = ExtResource("6_5o5w8")
 use_collision = true
 collision_layer = 3
 collision_mask = 15
