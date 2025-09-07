@@ -124,4 +124,3 @@ func _make_coin(position: Vector3) -> void:
 
 func _process(delta: float) -> void:
 	pass
-

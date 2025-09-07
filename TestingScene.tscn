@@ -34,6 +34,8 @@ sky = SubResource("Sky_ypt0w")
 
 [node name="Node3D" type="Node3D"]
 
+[node name="EntityManagementSystem" type="EntityManagementSystem" parent="."]
+
 [node name="EntitySpawnSystem" type="Node" parent="."]
 script = ExtResource("1_ypt0w")
 player_model = SubResource("CylinderMesh_ypt0w")
