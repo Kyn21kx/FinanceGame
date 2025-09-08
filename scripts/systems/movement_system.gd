@@ -146,5 +146,6 @@ func _physics_process(delta: float) -> void:
 
 		
 		_handle_movement_state(delta, movement, body, dash)
+		DebugDraw3D.draw_text(body.get_transform().origin + (Vector3.UP * 2), "State: " + Components.movement_state_names[movement.state], 56)
 	)
 	pass

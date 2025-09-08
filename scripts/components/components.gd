@@ -1,6 +1,9 @@
 class_name Components
 
+const movement_state_names = ["Idle", "Airbone", "Jumped", "Dashing"]
+
 enum MovState { Idle, Airbone, Jumped, Dashing }
+
 enum CollectableType { Coin }
 
 class PhysicsBody:
@@ -104,7 +107,6 @@ class Dash:
 
 class Controller:
 	# TODO: Maybe these could be functions or actions to make sure it works for controllers
-
 	var forward_key: int
 	var backward_key: int
 	var right_key: int
@@ -115,6 +117,20 @@ class Controller:
 	var dash_key: int
 	var hit_key: int
 	
+	func get_axis_left() -> Vector2:
+		var result := Vector2.ZERO
+
+		if (Input.is_key_pressed(self.forward_key)):
+			result += Vector2.UP
+		if (Input.is_key_pressed(self.backward_key)):
+			result += Vector2.DOWN
+		if (Input.is_key_pressed(self.left_key)):
+			result -= Vector2.RIGHT
+		if (Input.is_key_pressed(self.right_key)):
+			result += Vector2.RIGHT
+
+		return result
+
 	static func get_type_name() -> StringName:
 		return "Controller"
 
@@ -155,6 +171,6 @@ class Player:
 
 
 class Bag:
-	
+	var last_player_id: RID
 	static func get_type_name() -> StringName:
 		return "Bag"

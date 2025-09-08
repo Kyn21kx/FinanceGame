@@ -31,6 +31,7 @@ func _ready() -> void:
 	controller_comp_p1.right_key = KEY_D
 	controller_comp_p1.jump_key = KEY_SPACE
 	controller_comp_p1.dash_key = KEY_SHIFT
+	controller_comp_p1.hit_key = KEY_F
 	self._make_player(controller_comp_p1)
 
 	# Second player for testing
