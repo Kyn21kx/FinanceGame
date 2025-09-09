@@ -75,22 +75,6 @@ offset_right = 71.0
 offset_bottom = 33.0
 text = "Coins: 0"
 
-[node name="Button" type="Button" parent="."]
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -105.0
-offset_top = -41.0
-offset_right = -10.0
-offset_bottom = -10.0
-grow_horizontal = 0
-grow_vertical = 0
-size_flags_horizontal = 8
-size_flags_vertical = 8
-text = "spawn coin"
-
 [node name="Environment" type="Node" parent="."]
 
 [node name="CSGBox3D" type="CSGBox3D" parent="Environment"]
@@ -120,5 +104,3 @@ transform = Transform3D(34.2744, 0, 0, 1.91971e-14, -7.41245e-09, -27.1921, 9.53
 material_override = ExtResource("6_7hjm2")
 use_collision = true
 collision_mask = 3
-
-[connection signal="pressed" from="Button" to="EntitySpawnSystem" method="_on_button_pressed"]

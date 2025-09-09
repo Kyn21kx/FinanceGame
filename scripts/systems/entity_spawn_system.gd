@@ -101,7 +101,10 @@ func _make_player(controller_comp: Components.Controller) -> void:
 	collector_comp.attraction_factor = 7
 	collector_comp.pickup_range = 1
 	FlecsScene.entity_add_component_instance(player, Components.Collector.get_type_name(), collector_comp)
-	pass
+	
+	var inventory_comp := Components.Inventory.new()
+	FlecsScene.entity_add_component_instance(player, Components.Inventory.get_type_name(), inventory_comp)
+
 
 func _make_coin(position: Vector3) -> void:
 	var coin : RID = FlecsScene.create_raw_entity()
@@ -119,9 +122,11 @@ func _make_coin(position: Vector3) -> void:
 	FlecsScene.entity_add_component_instance(coin, Components.PhysicsBody.get_type_name(), physics_comp) 
 	
 	var collectable_comp := Components.Collectable.new()
+	collectable_comp.item = Components.Item.Coin
+	collectable_comp.amount = 1
 	collectable_comp.weight = 2
-	collectable_comp.type = Components.CollectableType.Coin
 	FlecsScene.entity_add_component_instance(coin, Components.Collectable.get_type_name(), collectable_comp)
+
 
 func _process(delta: float) -> void:
 	pass

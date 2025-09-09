@@ -4,7 +4,8 @@ const movement_state_names = ["Idle", "Airbone", "Jumped", "Dashing"]
 
 enum MovState { Idle, Airbone, Jumped, Dashing }
 
-enum CollectableType { Coin }
+enum Item { Coin, Ingot }
+
 
 class PhysicsBody:
 	var body_id: RID
@@ -135,34 +136,53 @@ class Controller:
 		return "Controller"
 
 
+class Inventory:
+	var __storage : Dictionary
+	
+	var coins : float = 0: 
+		get : return get_amount(Item.Coin)
+		set(value) : set_amount(Item.Coin, value)
+	 
+	var ingots : float = 0:
+		get : return get_amount(Item.Ingot)
+		set(value) : set_amount(Item.Ingot, value) 
+	
+	func get_amount(item : Item) -> float:
+		if (__storage.has(item)):
+			return __storage[item]
+			
+		return 0
+	
+	func set_amount(item : Item, amount : float) -> void:
+		__storage[item] = amount
+	
+	func add(item : Item, amount : float = 1):
+		set_amount(item, get_amount(item) + amount)
+	
+	func remove(item : Item, amount : float):
+		set_amount(item, max(0, get_amount(item) - amount))
+	
+	static func get_type_name() -> StringName:
+		return "Inventory"
+
+
 class Collectable:
+	var item : Item
+	var amount : float
 	var weight: float
-	var type: CollectableType = CollectableType.Coin 
 	
 	static func get_type_name() -> StringName:
 		return "Collectable"
 
 
 class Collector:
-	var inventory : Dictionary
 	var attraction_range : float
 	var attraction_factor : float
 	var pickup_range : float
-
-	func get_in_inventory(collectable: CollectableType) -> float:
-		if self.inventory.has(collectable):
-			return self.inventory[collectable]
-		
-		return 0
-	
-	func add_to_inventory(collectable_type: CollectableType, amount : float = 1) -> void:
-		self.inventory[collectable_type] = self.get_in_inventory(collectable_type) + amount
-	
-	func add_collectable_to_inventory(collectable: Collectable) -> void:
-		self.add_to_inventory(collectable.type, 1)
 	
 	static func get_type_name() -> StringName:
 		return "Collector"
+
 
 class Player:
 
