@@ -3,6 +3,7 @@ extends EditorPlugin
 
 # A class member to hold the dock during the plugin life cycle.
 var dock
+var gizmo_plugin := NodelessGizmoPlugin.new()
 
 
 func _enter_tree():
@@ -13,6 +14,7 @@ func _enter_tree():
 	# Add the loaded scene to the docks.
 	add_control_to_dock(DOCK_SLOT_LEFT_UL, dock)
 	# Note that LEFT_UL means the left of the editor, upper-left dock.
+	add_node_3d_gizmo_plugin(gizmo_plugin)
 
 
 func _exit_tree():
@@ -21,3 +23,5 @@ func _exit_tree():
 	remove_control_from_docks(dock)
 	# Erase the control from the memory.
 	dock.free()
+
+	remove_node_3d_gizmo_plugin(gizmo_plugin)

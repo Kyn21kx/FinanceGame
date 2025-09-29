@@ -17,6 +17,13 @@ var coin_model: Mesh
 @export
 var coin_shape: Shape3D
 
+@export
+var sample_pos: Vector3
+
+var box_mesh := BoxMesh.new()
+
+var box_shape := BoxShape3D.new()
+
 var ball_mesh := SphereMesh.new()
 
 var ball_shape := SphereShape3D.new()
@@ -32,6 +39,7 @@ func _ready() -> void:
 	controller_comp_p1.jump_key = KEY_SPACE
 	controller_comp_p1.dash_key = KEY_SHIFT
 	controller_comp_p1.hit_key = KEY_F
+	controller_comp_p1.throw_action = "throw_p1"
 	self._make_player(controller_comp_p1)
 
 	# Second player for testing
@@ -42,6 +50,8 @@ func _ready() -> void:
 	controller_comp_p2.right_key = KEY_RIGHT
 	controller_comp_p2.jump_key = KEY_ALT
 	controller_comp_p2.dash_key = KEY_CTRL
+	controller_comp_p2.hit_key = KEY_M
+	controller_comp_p2.throw_action = "throw_p2"
 	self._make_player(controller_comp_p2)
 	
 	self._make_coin(Vector3(2, 0, 1))
@@ -53,6 +63,9 @@ func _ready() -> void:
 	self._make_coin(Vector3(-2, 0, -2.5))
 	self._make_coin(Vector3(-2.5, 0, -3))
 	self._make_coin(Vector3(-1, 0, -3.5))
+
+
+	self._make_env_object(self.box_mesh, 1)
 	
 	self._make_ball()
 
@@ -70,6 +83,16 @@ func _make_ball() -> void:
 	FlecsScene.entity_add_component_instance(ball, Components.MeshComponent.get_type_name(), mesh_comp)
 	FlecsScene.entity_add_component_instance(ball, Components.Bag.get_type_name(), bag_comp)
 
+# TODO: Allow them to make them from a typed resource
+func _make_env_object(mesh: Mesh, weight: float) -> void:
+	var obj : RID = FlecsScene.create_raw_entity_with_name("Obstacle")
+	var throwable := Components.Throwable.new(weight)
+	FlecsScene.entity_add_component_instance(obj, Components.Throwable.get_type_name(), throwable)
+	var body := Components.PhysicsBody.new(self.box_shape, self.get_viewport().world_3d)
+	var mesh_comp := Components.MeshComponent.new(mesh, self.get_viewport().world_3d)
+	FlecsScene.entity_add_component_instance(obj, Components.PhysicsBody.get_type_name(), body) 
+	FlecsScene.entity_add_component_instance(obj, Components.MeshComponent.get_type_name(), mesh_comp) 
+	pass
 
 func _make_player(controller_comp: Components.Controller) -> void:
 	var player : RID = FlecsScene.create_raw_entity_with_name("Player")
@@ -104,6 +127,10 @@ func _make_player(controller_comp: Components.Controller) -> void:
 	
 	var inventory_comp := Components.Inventory.new()
 	FlecsScene.entity_add_component_instance(player, Components.Inventory.get_type_name(), inventory_comp)
+
+	var thrower_comp := Components.Thrower.new()
+	thrower_comp.throw_force = 10
+	FlecsScene.entity_add_component_instance(player, Components.Thrower.get_type_name(), thrower_comp)
 
 
 func _make_coin(position: Vector3) -> void:

@@ -52,7 +52,7 @@ func _handle_movement_state(delta: float, movement: Components.Movement, body: C
 
 
 	# TODO: Move to independent function when needed
-	body.apply_force(movement.direction * movement.speed)
+	body.apply_force(movement.direction * movement.speed * movement.speed_mod_factor)
 	pass
 
 func _handle_dash(delta: float,  movement: Components.Movement, body: Components.PhysicsBody, dash_info: Components.Dash):

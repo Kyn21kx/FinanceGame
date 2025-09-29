@@ -6,6 +6,7 @@ enum MovState { Idle, Airbone, Jumped, Dashing }
 
 enum Item { Coin, Ingot }
 
+enum ThrowableState { Released, Dragging, Thrown }
 
 class PhysicsBody:
 	var body_id: RID
@@ -77,6 +78,7 @@ class MeshComponent:
 class Movement:
 	var direction: Vector3
 	var speed: float
+	var speed_mod_factor: float = 1
 	var jump_force: float
 
 	var state: MovState = MovState.Idle
@@ -117,6 +119,7 @@ class Controller:
 
 	var dash_key: int
 	var hit_key: int
+	var throw_action: StringName
 	
 	func get_axis_left() -> Vector2:
 		var result := Vector2.ZERO
@@ -194,3 +197,23 @@ class Bag:
 	var last_player_id: RID
 	static func get_type_name() -> StringName:
 		return "Bag"
+
+
+class Throwable:
+	var weight: float
+	var state: ThrowableState = ThrowableState.Released
+	var thrower_id: RID = rid_from_int64(0)
+
+	func _init(p_weight: float) -> void:
+		self.weight = p_weight
+		pass
+
+	static func get_type_name() -> StringName:
+		return "Throwable"
+
+class Thrower:
+	var throw_force: float
+	var throwing_direction: Vector3
+
+	static func get_type_name() -> StringName:
+		return "Thrower"
