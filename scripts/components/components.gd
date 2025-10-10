@@ -80,13 +80,13 @@ class PhysicsJoint:
 	var joint_id : RID
 	var joint_type: JointType
 
-	func _init(body_a: RID, body_b: RID, type: JointType) -> void:
+	func _init(body_a: RID, body_b: RID, type: JointType, local_a: Vector3 = Vector3.ZERO, local_b: Vector3 = Vector3.ZERO) -> void:
 		self.joint_id = PhysicsServer3D.joint_create()
 		self.joint_type = type
 
 		match self.joint_type:
 			JointType.Pin:
-				PhysicsServer3D.joint_make_pin(self.joint_id, body_a, Vector3.ZERO, body_b, Vector3.ZERO)
+				PhysicsServer3D.joint_make_pin(self.joint_id, body_a, local_a, body_b, local_b)
 			JointType.Hinge:
 				PhysicsServer3D.joint_make_hinge(self.joint_id, body_a, Transform3D.IDENTITY, body_b, Transform3D.IDENTITY)
 			JointType.Slider:
@@ -104,6 +104,9 @@ class PhysicsJoint:
 
 	func set_pin_bias(bias: float) -> void:
 		PhysicsServer3D.pin_joint_set_param(self.joint_id, PhysicsServer3D.PIN_JOINT_BIAS, bias) 
+
+	func set_pin_damping(damping: float) -> void:
+		PhysicsServer3D.pin_joint_set_param(self.joint_id, PhysicsServer3D.PIN_JOINT_DAMPING, damping)
 
 	func dispose() -> void:
 		PhysicsServer3D.free_rid(self.joint_id)

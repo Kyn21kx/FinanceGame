@@ -91,28 +91,36 @@ func handle_throwables_physics(_throwable: RID, throwable_comps: Array):
 	pass
 
 func release_object(thrower_id: RID) -> void:
-	FlecsScene.entity_remove_component(thrower_id, Components.RopeJoint.get_type_name())
+	var joint : Components.PhysicsJoint = FlecsScene.get_component_from_entity(thrower_id, Components.PhysicsJoint.get_type_name())
+	joint.dispose()
+	FlecsScene.entity_remove_component(thrower_id, Components.PhysicsJoint.get_type_name())
 
 
 func drag_object(throwable_info: Components.Throwable, throwable_body: Components.PhysicsBody):
 	# Add the joint component
-	var joint_comp : Components.RopeJoint = FlecsScene.get_component_from_entity(throwable_info.thrower_id, Components.RopeJoint.get_type_name())
+	var joint_comp : Components.PhysicsJoint = FlecsScene.get_component_from_entity(throwable_info.thrower_id, Components.PhysicsJoint.get_type_name())
 	var thrower_body : Components.PhysicsBody = FlecsScene.get_component_from_entity(throwable_info.thrower_id, Components.PhysicsBody.get_type_name())
 	if joint_comp != null:
 		# Force the y position to be above the ground
-		var xform : Transform3D = throwable_body.get_transform()
-		const offset := 1
-		xform.origin.y = thrower_body.get_transform().origin.y + offset
-		throwable_body.set_transform(xform)
-		apply_rotation_sync(joint_comp, throwable_body.get_transform(), xform)
+		# var xform : Transform3D = throwable_body.get_transform()
+		# const offset := 1
+		# xform.origin.y = thrower_body.get_transform().origin.y + offset
+		# throwable_body.set_transform(xform)
+		# apply_rotation_sync(joint_comp, throwable_body.get_transform(), xform)
 		return
-	var joint := Components.RopeJoint.new(thrower_body, throwable_body)
-	joint.set_length(self.object_drag_length)
-	joint.set_strength(self.object_drag_strength)
-	FlecsScene.entity_add_component_instance(throwable_info.thrower_id, Components.RopeJoint.get_type_name(), joint)
+	var local_pin_offset := Vector3.UP + (Vector3.FORWARD * self.object_drag_length)
+	throwable_body.set_gravity_scale(0)
+	var joint := Components.PhysicsJoint.new(thrower_body.body_id, throwable_body.body_id, Components.JointType.Pin, local_pin_offset)
+	joint.set_collision_between_connected_bodies(true)
+	joint.set_pin_bias(0.1)
+	joint.set_pin_damping(10)
+
+	# joint.set_length(self.object_drag_length)
+	# joint.set_strength(self.object_drag_strength)
+	FlecsScene.entity_add_component_instance(throwable_info.thrower_id, Components.PhysicsJoint.get_type_name(), joint)
 	
 
-func apply_rotation_sync(rope_joint: Components.RopeJoint, carrier_xform: Transform3D, carried_xform: Transform3D):
+func apply_rotation_sync(rope_joint: Components.PhysicsJoint, carrier_xform: Transform3D, carried_xform: Transform3D):
 	var to_object : Vector3 = carried_xform.origin - carrier_xform.origin
 	to_object.y = 0
 
