@@ -29,8 +29,26 @@ var ball_mesh := SphereMesh.new()
 var ball_shape := SphereShape3D.new()
 
 func _ready() -> void:
-	# Spawn the player at start with its default components
+	var float_comp : float = 4.8
+	var test := FlecsScene.create_raw_entity_with_name("TestEntity")
+	FlecsScene.entity_add_component_instance(test, "Arbitrary", float_comp)
+	#FlecsScene.register_gdscript_primitive_component_serializer("Arbitrary", TYPE_FLOAT)
 
+	# FlecsScene.entity_add_component_instance(test, "ArbitraryString", "Woooo, we are a string")
+	# FlecsScene.register_gdscript_primitive_component_serializer("ArbitraryString", TYPE_STRING)
+
+
+	#FlecsScene.save_scene("res://world.json")
+
+	#FlecsScene.entity_add_component_instance(test, "Arbitrary", 21.21)
+	#FlecsScene.entity_add_component_instance(test, "ArbitraryString", "We are another string")
+	
+	#FlecsScene.load_scene("res://world.json")
+
+	#print(FlecsScene.get_component_from_entity(test, "Arbitrary"))
+	# print(FlecsScene.get_component_from_entity(test, "ArbitraryString"))
+
+	# Spawn the player at start with its default components
 	var controller_comp_p1 := Components.Controller.new()
 	controller_comp_p1.forward_key = KEY_W
 	controller_comp_p1.backward_key = KEY_S
@@ -65,7 +83,7 @@ func _ready() -> void:
 	self._make_coin(Vector3(-1, 0, -3.5))
 
 
-	self._make_env_object(self.box_mesh, 1)
+	self._make_env_object(self.box_mesh, 10)
 	
 	self._make_ball()
 

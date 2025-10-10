@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="New Game Project"
+config/name="FInanceGame"
 run/main_scene="uid://17diqbcutb3p"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"

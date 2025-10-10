@@ -7,6 +7,12 @@ var players_query := Query.new()
 var bags_query := Query.new()
 var throwables_query := Query.new()
 
+@export
+var object_drag_strength: float
+
+@export
+var object_drag_length: float
+
 func _ready() -> void:
 	self.players_query.with_and_register(Components.Player.get_type_name())
 	self.players_query.with_and_register(Components.Controller.get_type_name())
@@ -18,7 +24,7 @@ func _ready() -> void:
 	self.throwables_query.with_and_register(Components.Throwable.get_type_name())
 	self.throwables_query.with_and_register(Components.PhysicsBody.get_type_name())
 	
-func _process(delta: float):
+func _process(_delta: float):
 	self.players_query.each(_throwing_system_input)
 	pass
 
@@ -26,7 +32,7 @@ func _throwing_system_input(_player: RID, components: Array):
 	var controller : Components.Controller = components[1]
 	var player_body : Components.PhysicsBody = components[2]
 	var player_xform = player_body.get_transform()
-	self.throwables_query.each(func _iter_throwables(throwable: RID, throwable_comps: Array):
+	self.throwables_query.each(func _iter_throwables(_throwable: RID, throwable_comps: Array):
 		# Do a distance check and if it is close enough trigger the 
 		var throwable_info : Components.Throwable = throwable_comps[0]
 		var throwable_body : Components.PhysicsBody = throwable_comps[1]
@@ -56,7 +62,7 @@ func _throwing_system_input(_player: RID, components: Array):
 	)
 	
 
-func handle_throwables_physics(throwable: RID, throwable_comps: Array):
+func handle_throwables_physics(_throwable: RID, throwable_comps: Array):
 	var throwable_info : Components.Throwable = throwable_comps[0]
 	var throwable_body : Components.PhysicsBody = throwable_comps[1]
 	# var throwable_xform := throwable_body.get_transform()
@@ -67,24 +73,85 @@ func handle_throwables_physics(throwable: RID, throwable_comps: Array):
 	var thrower_info : Components.Thrower = FlecsScene.get_component_from_entity(throwable_info.thrower_id, Components.Thrower.get_type_name())
 	match throwable_info.state:
 		Components.ThrowableState.Dragging:
-			# Modify the speed based on the weight, and also move the physics body towards us
-			var thrower_body : Components.PhysicsBody = FlecsScene.get_component_from_entity(throwable_info.thrower_id, Components.PhysicsBody.get_type_name())
-			var thrower_xform : Transform3D = thrower_body.get_transform()
-			var throwable_xform = throwable_body.get_transform()
-			throwable_xform.origin = thrower_xform.origin + ((Vector3.UP - thrower_xform.basis.z) * 2)
-			throwable_body.set_gravity_scale(0)
-			throwable_body.set_transform(throwable_xform)
+			self.drag_object(throwable_info, throwable_body)
 		Components.ThrowableState.Thrown:
+			# Detach the joint
+			self.release_object(throwable_info.thrower_id)
 			var force := thrower_info.throwing_direction * thrower_info.throw_force
 			throwable_body.set_gravity_scale(1)
 			throwable_body.apply_impulse(force)
+
+			# Restore the movement factor
+			var thrower_mov : Components.Movement = FlecsScene.get_component_from_entity(throwable_info.thrower_id, Components.Movement.get_type_name())
+			thrower_mov.speed_mod_factor = 1
 			throwable_info.state = Components.ThrowableState.Released
 		Components.ThrowableState.Released:
-			throwable_body.set_gravity_scale(1)
-
-		
+			pass
 
 	pass
+
+func release_object(thrower_id: RID) -> void:
+	FlecsScene.entity_remove_component(thrower_id, Components.RopeJoint.get_type_name())
+
+
+func drag_object(throwable_info: Components.Throwable, throwable_body: Components.PhysicsBody):
+	# Add the joint component
+	var joint_comp : Components.RopeJoint = FlecsScene.get_component_from_entity(throwable_info.thrower_id, Components.RopeJoint.get_type_name())
+	var thrower_body : Components.PhysicsBody = FlecsScene.get_component_from_entity(throwable_info.thrower_id, Components.PhysicsBody.get_type_name())
+	if joint_comp != null:
+		# Force the y position to be above the ground
+		var xform : Transform3D = throwable_body.get_transform()
+		const offset := 1
+		xform.origin.y = thrower_body.get_transform().origin.y + offset
+		throwable_body.set_transform(xform)
+		apply_rotation_sync(joint_comp, throwable_body.get_transform(), xform)
+		return
+	var joint := Components.RopeJoint.new(thrower_body, throwable_body)
+	joint.set_length(self.object_drag_length)
+	joint.set_strength(self.object_drag_strength)
+	FlecsScene.entity_add_component_instance(throwable_info.thrower_id, Components.RopeJoint.get_type_name(), joint)
+	
+
+func apply_rotation_sync(rope_joint: Components.RopeJoint, carrier_xform: Transform3D, carried_xform: Transform3D):
+	var to_object : Vector3 = carried_xform.origin - carrier_xform.origin
+	to_object.y = 0
+
+	const epsilon := 0.001
+
+	if to_object.length_squared() < epsilon:
+		return
+
+	to_object = to_object.normalized()
+
+	# Get carrier's forward direction (where they're facing)
+	var carrier_forward = -carrier_xform.basis.z
+	carrier_forward.y = 0
+	carrier_forward = carrier_forward.normalized()
+
+	# Calculate the angle the object SHOULD be at relative to carrier
+	var desired_angle = atan2(to_object.x, to_object.z)
+
+	# Get the object's current rotation
+	var carried_forward = -carried_xform.basis.z
+	var current_angle = atan2(carried_forward.x, carried_forward.z)
+
+	# The angle difference to correct
+	var angle_diff = desired_angle - current_angle
+
+	while angle_diff > PI:
+		angle_diff -= TAU
+	while angle_diff < -PI:
+		angle_diff += TAU
+
+	var rotation_strength = 50.0
+	var torque = Vector3(0, angle_diff * rotation_strength, 0)
+	rope_joint.body_b.apply_torque(torque)
+
+	# Angular damping
+	var angular_velocity_b = rope_joint.body_b.get_angular_velocity()
+	var angular_damping = 5.0
+	var damping_torque = -angular_velocity_b * angular_damping
+	rope_joint.body_b.apply_torque(damping_torque)
 
 func _physics_process(_delta: float):
 	self.throwables_query.each(handle_throwables_physics)

@@ -8,6 +8,17 @@ enum Item { Coin, Ingot }
 
 enum ThrowableState { Released, Dragging, Thrown }
 
+
+enum JointType {
+	Pin,
+	Hinge,
+	Slider,
+	ConeTwist,
+	Generic6DOF
+}
+
+const THROWABLE_MAX_WEIGHT := 20
+
 class PhysicsBody:
 	var body_id: RID
 	var shape: RID
@@ -34,6 +45,9 @@ class PhysicsBody:
 	
 	func get_velocity() -> Vector3:
 		return PhysicsServer3D.body_get_state(self.body_id, PhysicsServer3D.BODY_STATE_LINEAR_VELOCITY)
+
+	func get_mass() -> float:
+		return PhysicsServer3D.body_get_param(self.body_id, PhysicsServer3D.BODY_PARAM_MASS)
 	
 	func set_gravity_scale(scale: float) -> void:
 		PhysicsServer3D.body_set_param(self.body_id, PhysicsServer3D.BODY_PARAM_GRAVITY_SCALE, scale) 
@@ -60,6 +74,64 @@ class PhysicsBody:
 	static func get_type_name() -> StringName:
 		return "PhysicsBody"
 
+
+class PhysicsJoint:
+
+	var joint_id : RID
+	var joint_type: JointType
+
+	func _init(body_a: RID, body_b: RID, type: JointType) -> void:
+		self.joint_id = PhysicsServer3D.joint_create()
+		self.joint_type = type
+
+		match self.joint_type:
+			JointType.Pin:
+				PhysicsServer3D.joint_make_pin(self.joint_id, body_a, Vector3.ZERO, body_b, Vector3.ZERO)
+			JointType.Hinge:
+				PhysicsServer3D.joint_make_hinge(self.joint_id, body_a, Transform3D.IDENTITY, body_b, Transform3D.IDENTITY)
+			JointType.Slider:
+				PhysicsServer3D.joint_make_slider(self.joint_id, body_a, Transform3D.IDENTITY, body_b, Transform3D.IDENTITY)
+			JointType.ConeTwist:
+				PhysicsServer3D.joint_make_cone_twist(self.joint_id, body_a, Transform3D.IDENTITY, body_b, Transform3D.IDENTITY)
+			JointType.Generic6DOF:
+				PhysicsServer3D.joint_make_generic_6dof(self.joint_id, body_a, Transform3D.IDENTITY, body_b, Transform3D.IDENTITY)
+
+
+
+
+	func set_collision_between_connected_bodies(enabled: bool) -> void:
+		PhysicsServer3D.joint_disable_collisions_between_bodies(self.joint_id, !enabled)
+
+	func set_pin_bias(bias: float) -> void:
+		PhysicsServer3D.pin_joint_set_param(self.joint_id, PhysicsServer3D.PIN_JOINT_BIAS, bias) 
+
+	func dispose() -> void:
+		PhysicsServer3D.free_rid(self.joint_id)
+		self.joint_id = RID()
+
+	static func get_type_name() -> StringName:
+		return "PhysicsJoint"
+
+class RopeJoint:
+	var body_a: PhysicsBody
+	var body_b: PhysicsBody
+	var length: float = 0.1
+	var strength: float = 1.0
+	var damping: float = 0.5
+
+	func _init(p_body_a: PhysicsBody, p_body_b: PhysicsBody) -> void:
+		self.body_a = p_body_a
+		self.body_b = p_body_b
+		pass
+
+	func set_length(p_length: float) -> void:
+		self.length = p_length
+	
+	func set_strength(p_strength: float) -> void:
+		self.strength = p_strength
+	
+	static func get_type_name() -> StringName:
+		return "RopeJoint"
 
 class MeshComponent:
 	var instance: RID

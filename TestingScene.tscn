@@ -58,6 +58,8 @@ script = ExtResource("5_5gf4p")
 
 [node name="BagSystem" type="Node" parent="."]
 script = ExtResource("6_boodp")
+object_drag_strength = 7.0
+object_drag_length = 2.0
 metadata/_custom_type_script = "uid://dsn53ggkji2d0"
 
 [node name="Camera3D" type="Camera3D" parent="."]
