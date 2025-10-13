@@ -97,8 +97,6 @@ class PhysicsJoint:
 				PhysicsServer3D.joint_make_generic_6dof(self.joint_id, body_a, Transform3D.IDENTITY, body_b, Transform3D.IDENTITY)
 
 
-
-
 	func set_collision_between_connected_bodies(enabled: bool) -> void:
 		PhysicsServer3D.joint_disable_collisions_between_bodies(self.joint_id, !enabled)
 
@@ -292,3 +290,15 @@ class Thrower:
 
 	static func get_type_name() -> StringName:
 		return "Thrower"
+
+class MagneticAttracter:
+	var strength: float
+	var threshold: float
+
+	static func get_type_name() -> StringName:
+		return "MagneticAttracter"
+	
+
+class MagneticTarget:
+	static func get_type_name() -> StringName:
+		return "MagneticTarget"

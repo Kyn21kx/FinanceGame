@@ -32,22 +32,7 @@ func _ready() -> void:
 	var float_comp : float = 4.8
 	var test := FlecsScene.create_raw_entity_with_name("TestEntity")
 	FlecsScene.entity_add_component_instance(test, "Arbitrary", float_comp)
-	#FlecsScene.register_gdscript_primitive_component_serializer("Arbitrary", TYPE_FLOAT)
-
-	# FlecsScene.entity_add_component_instance(test, "ArbitraryString", "Woooo, we are a string")
-	# FlecsScene.register_gdscript_primitive_component_serializer("ArbitraryString", TYPE_STRING)
-
-
-	#FlecsScene.save_scene("res://world.json")
-
-	#FlecsScene.entity_add_component_instance(test, "Arbitrary", 21.21)
-	#FlecsScene.entity_add_component_instance(test, "ArbitraryString", "We are another string")
 	
-	#FlecsScene.load_scene("res://world.json")
-
-	#print(FlecsScene.get_component_from_entity(test, "Arbitrary"))
-	# print(FlecsScene.get_component_from_entity(test, "ArbitraryString"))
-
 	# Spawn the player at start with its default components
 	var controller_comp_p1 := Components.Controller.new()
 	controller_comp_p1.forward_key = KEY_W
@@ -87,12 +72,14 @@ func _ready() -> void:
 	
 	self._make_ball()
 
-
 func _make_ball() -> void:
 	var ball : RID = FlecsScene.create_raw_entity_with_name("Ball")
 	var mesh_comp := Components.MeshComponent.new(ball_mesh, self.get_viewport().world_3d)
 	var xform := Transform3D(Basis(), Vector3(0, 5, -3))
 	var body := Components.PhysicsBody.new(ball_shape, self.get_viewport().world_3d, xform)
+	var attracter := Components.MagneticAttracter.new()
+	attracter.strength = 30
+	attracter.threshold = 30
 	body.set_bounciness(0.7)
 	body.set_gravity_scale(0.1)
 	var bag_comp := Components.Bag.new()
@@ -100,6 +87,7 @@ func _make_ball() -> void:
 	FlecsScene.entity_add_component_instance(ball, Components.PhysicsBody.get_type_name(), body)
 	FlecsScene.entity_add_component_instance(ball, Components.MeshComponent.get_type_name(), mesh_comp)
 	FlecsScene.entity_add_component_instance(ball, Components.Bag.get_type_name(), bag_comp)
+	FlecsScene.entity_add_component_instance(ball, Components.MagneticAttracter.get_type_name(), attracter)
 
 # TODO: Allow them to make them from a typed resource
 func _make_env_object(mesh: Mesh, weight: float) -> void:
@@ -110,6 +98,8 @@ func _make_env_object(mesh: Mesh, weight: float) -> void:
 	var mesh_comp := Components.MeshComponent.new(mesh, self.get_viewport().world_3d)
 	FlecsScene.entity_add_component_instance(obj, Components.PhysicsBody.get_type_name(), body) 
 	FlecsScene.entity_add_component_instance(obj, Components.MeshComponent.get_type_name(), mesh_comp) 
+	var attracted_comp := Components.MagneticTarget.new()
+	FlecsScene.entity_add_component_instance(obj, Components.MagneticTarget.get_type_name(), attracted_comp) 
 	pass
 
 func _make_player(controller_comp: Components.Controller) -> void:
@@ -147,7 +137,7 @@ func _make_player(controller_comp: Components.Controller) -> void:
 	FlecsScene.entity_add_component_instance(player, Components.Inventory.get_type_name(), inventory_comp)
 
 	var thrower_comp := Components.Thrower.new()
-	thrower_comp.throw_force = 10
+	thrower_comp.throw_force = 30
 	FlecsScene.entity_add_component_instance(player, Components.Thrower.get_type_name(), thrower_comp)
 
 

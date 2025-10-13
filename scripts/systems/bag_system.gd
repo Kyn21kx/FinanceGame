@@ -6,6 +6,8 @@ const THROWABLE_DETECTION_RADIUS_SQR := 5 * 5
 var players_query := Query.new()
 var bags_query := Query.new()
 var throwables_query := Query.new()
+var magnetizers_query := Query.new()
+var magnetic_attracted_query := Query.new()
 
 @export
 var object_drag_strength: float
@@ -23,10 +25,59 @@ func _ready() -> void:
 
 	self.throwables_query.with_and_register(Components.Throwable.get_type_name())
 	self.throwables_query.with_and_register(Components.PhysicsBody.get_type_name())
+
+	self.magnetizers_query.with_and_register(Components.MagneticAttracter.get_type_name())
+	self.magnetizers_query.with_and_register(Components.PhysicsBody.get_type_name())
+
+	self.magnetic_attracted_query.with_and_register(Components.MagneticTarget.get_type_name())
+	self.magnetic_attracted_query.with_and_register(Components.PhysicsBody.get_type_name())
+
 	
 func _process(_delta: float):
 	self.players_query.each(_throwing_system_input)
 	pass
+
+func magnetizing_system():
+	self.magnetizers_query.each(func (_entity: RID, components: Array):
+		var magnetic_attractor : Components.MagneticAttracter = components[0]
+		var magnetic_body : Components.PhysicsBody = components[1]
+		self.magnetic_attracted_query.each(func (_entity: RID, components: Array):
+			var attracted_body : Components.PhysicsBody = components[1]
+			var diff : Vector3 = magnetic_body.get_transform().origin - attracted_body.get_transform().origin
+
+			if (diff.length_squared() > magnetic_attractor.threshold):
+				return
+
+			var direction := diff.normalized()
+
+			# Apply the force logarithmically with the distance
+			magnetic_body.apply_force(direction * magnetic_attractor.strength)
+		)
+	)
+	pass
+
+func calculate_aim(controller: Components.Controller, player_pos: Vector3, throwable_pos: Vector3) -> Vector3:
+	# Get the movement axis and apply that as the throwing direction if we want to throw
+	var direction := controller.get_axis_left()
+
+	# Awful by reference trick
+	var result_wrapper : Array = [Vector3(direction.x, 0, direction.y)] # Z and X
+
+	# If the object is close to and the direction's normal is sufficently angled to
+	# the bag, we set the throwing direction in the direction of the bag so that it hits it
+	self.bags_query.each(func iter(_bag_entity: RID, components: Array):
+		var bag_body : Components.PhysicsBody = components[1]
+		var bag_pos : Vector3 = bag_body.get_transform().origin
+		const auto_aim_threshold_sqr := 90
+		var diff : Vector3 = bag_pos - player_pos
+		var direction_similarity : float = result_wrapper[0].dot(diff)
+		print("direction similarity: ", direction_similarity)
+		if (diff.length_squared() > auto_aim_threshold_sqr || direction_similarity  < 0.8):
+			return
+		result_wrapper[0] = (bag_pos - throwable_pos).normalized()
+	)
+
+	return result_wrapper[0]
 
 func _throwing_system_input(_player: RID, components: Array):
 	var controller : Components.Controller = components[1]
@@ -48,10 +99,7 @@ func _throwing_system_input(_player: RID, components: Array):
 			if (throwable_info.thrower_id != _player): return
 			var thrower_info : Components.Thrower = FlecsScene.get_component_from_entity(_player, Components.Thrower.get_type_name())
 			if (throwable_info.state == Components.ThrowableState.Dragging):
-				# Get the movement axis and apply that as the throwing direction if we want to throw
-				var direction = controller.get_axis_left()
-				thrower_info.throwing_direction = Vector3(direction.x, 0, direction.y) # Z and X
-			
+				thrower_info.throwing_direction = self.calculate_aim(controller, player_xform.origin, throwable_xform.origin) # Handles auto aim when close to the bag
 				throwable_info.state = Components.ThrowableState.Thrown
 				return
 
@@ -91,14 +139,12 @@ func handle_throwables_physics(_throwable: RID, throwable_comps: Array):
 	pass
 
 func release_object(thrower_id: RID) -> void:
-	var joint : Components.PhysicsJoint = FlecsScene.get_component_from_entity(thrower_id, Components.PhysicsJoint.get_type_name())
-	joint.dispose()
-	FlecsScene.entity_remove_component(thrower_id, Components.PhysicsJoint.get_type_name())
+	FlecsScene.entity_remove_component(thrower_id, Components.RopeJoint.get_type_name())
 
 
 func drag_object(throwable_info: Components.Throwable, throwable_body: Components.PhysicsBody):
 	# Add the joint component
-	var joint_comp : Components.PhysicsJoint = FlecsScene.get_component_from_entity(throwable_info.thrower_id, Components.PhysicsJoint.get_type_name())
+	var joint_comp : Components.RopeJoint = FlecsScene.get_component_from_entity(throwable_info.thrower_id, Components.RopeJoint.get_type_name())
 	var thrower_body : Components.PhysicsBody = FlecsScene.get_component_from_entity(throwable_info.thrower_id, Components.PhysicsBody.get_type_name())
 	if joint_comp != null:
 		# Force the y position to be above the ground
@@ -108,19 +154,15 @@ func drag_object(throwable_info: Components.Throwable, throwable_body: Component
 		# throwable_body.set_transform(xform)
 		# apply_rotation_sync(joint_comp, throwable_body.get_transform(), xform)
 		return
-	var local_pin_offset := Vector3.UP + (Vector3.FORWARD * self.object_drag_length)
+	# var local_pin_offset := Vector3.UP + (Vector3.FORWARD * self.object_drag_length)
 	throwable_body.set_gravity_scale(0)
-	var joint := Components.PhysicsJoint.new(thrower_body.body_id, throwable_body.body_id, Components.JointType.Pin, local_pin_offset)
-	joint.set_collision_between_connected_bodies(true)
-	joint.set_pin_bias(0.1)
-	joint.set_pin_damping(10)
+	var joint := Components.RopeJoint.new(thrower_body, throwable_body)
+	joint.set_length(self.object_drag_length)
+	joint.set_strength(self.object_drag_strength)
+	FlecsScene.entity_add_component_instance(throwable_info.thrower_id, Components.RopeJoint.get_type_name(), joint)
 
-	# joint.set_length(self.object_drag_length)
-	# joint.set_strength(self.object_drag_strength)
-	FlecsScene.entity_add_component_instance(throwable_info.thrower_id, Components.PhysicsJoint.get_type_name(), joint)
-	
 
-func apply_rotation_sync(rope_joint: Components.PhysicsJoint, carrier_xform: Transform3D, carried_xform: Transform3D):
+func apply_rotation_sync(rope_joint: Components.RopeJoint, carrier_xform: Transform3D, carried_xform: Transform3D):
 	var to_object : Vector3 = carried_xform.origin - carrier_xform.origin
 	to_object.y = 0
 
@@ -162,6 +204,7 @@ func apply_rotation_sync(rope_joint: Components.PhysicsJoint, carrier_xform: Tra
 	rope_joint.body_b.apply_torque(damping_torque)
 
 func _physics_process(_delta: float):
+	# self.magnetizing_system()
 	self.throwables_query.each(handle_throwables_physics)
 	self.players_query.each(func _iter_players(player_entity: RID, components: Array):
 		var controller : Components.Controller = components[1]
