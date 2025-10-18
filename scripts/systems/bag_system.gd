@@ -37,12 +37,13 @@ func _process(_delta: float):
 	self.players_query.each(_throwing_system_input)
 	pass
 
+# TODO: Delete
 func magnetizing_system():
 	self.magnetizers_query.each(func (_entity: RID, components: Array):
 		var magnetic_attractor : Components.MagneticAttracter = components[0]
 		var magnetic_body : Components.PhysicsBody = components[1]
-		self.magnetic_attracted_query.each(func (_entity: RID, components: Array):
-			var attracted_body : Components.PhysicsBody = components[1]
+		self.magnetic_attracted_query.each(func (_attracted_entity: RID, attracted_components: Array):
+			var attracted_body : Components.PhysicsBody = attracted_components[1]
 			var diff : Vector3 = magnetic_body.get_transform().origin - attracted_body.get_transform().origin
 
 			if (diff.length_squared() > magnetic_attractor.threshold):

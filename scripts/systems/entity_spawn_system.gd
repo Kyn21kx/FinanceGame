@@ -6,6 +6,9 @@ class_name EntitySpawnSystem
 var player_model: Mesh
 
 @export
+var player_prefab: PackedScene
+
+@export
 var player_shape: Shape3D
 
 @export
