@@ -1,12 +1,17 @@
-[gd_scene load_steps=4 format=3 uid="uid://c37xemanlh67j"]
+[gd_scene load_steps=7 format=3 uid="uid://c37xemanlh67j"]
 
 [ext_resource type="Material" uid="uid://crkr2yoi6vwmh" path="res://materials/floor_test.tres" id="1_48s3g"]
+[ext_resource type="Script" uid="uid://7sut20oko3d3" path="res://tester.gd" id="1_g3hqd"]
+[ext_resource type="PackedScene" uid="uid://cdjj0i8kgyym0" path="res://models/placeholders/kenney_mini-characters/Models/FBX format/character-female-e.fbx" id="2_d86h8"]
+[ext_resource type="Script" uid="uid://c3cx1tdqnfacf" path="res://scripts/systems/scene_systems.gd" id="4_d86h8"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_48s3g"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_4gja5"]
 
 [node name="Node3D" type="Node3D"]
+script = ExtResource("1_g3hqd")
+prefab_test = ExtResource("2_d86h8")
 
 [node name="CSGBox3D" type="CSGBox3D" parent="."]
 transform = Transform3D(34.2744, 0, 0, 0, 0.169577, 0, 0, 0, 27.1921, 0, -0.986538, -2.30784)
@@ -16,12 +21,13 @@ collision_layer = 529407
 collision_mask = 31
 
 [node name="RigidBody3D" type="RigidBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.11386, 2.86008)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.86205, 2.11386, 2.86008)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D"]
 shape = SubResource("BoxShape3D_48s3g")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="RigidBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.198673, 0)
 mesh = SubResource("BoxMesh_4gja5")
 skeleton = NodePath("../..")
 
@@ -47,3 +53,8 @@ node_b = NodePath("../../RigidBody3D")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.855891, 2.32433, 9.30961)
+
+[node name="SceneSystems" type="Node" parent="."]
+script = ExtResource("4_d86h8")
+
+[node name="TestCubeSystem" type="TestCubeSystem" parent="SceneSystems"]

@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://batiltxcdoh44"]
+
+[ext_resource type="Script" uid="uid://cmf1im5ni3hu6" path="res://serialization_test.gd" id="1_s25uk"]
+
+[node name="Node3D" type="Node3D"]
+script = ExtResource("1_s25uk")
+
+[node name="TestCubeSystem" type="TestCubeSystem" parent="."]

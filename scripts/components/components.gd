@@ -8,6 +8,9 @@ enum Item { Coin, Ingot }
 
 enum ThrowableState { Released, Dragging, Thrown }
 
+enum PhysicsMasks {
+	GizmoLayer = 1 << 31
+}
 
 enum JointType {
 	Pin,
@@ -22,9 +25,12 @@ const THROWABLE_MAX_WEIGHT := 20
 class PhysicsBody:
 	var body_id: RID
 	var shape: RID
+	# Maybe we need to keep a ref
+	var shape_ref: Shape3D
 
 	func _init(p_shape: Shape3D, p_world: World3D, transform: Transform3D = Transform3D.IDENTITY) -> void:
 		self.shape = p_shape.get_rid()
+		self.shape_ref = p_shape
 		self.body_id = PhysicsServer3D.body_create()
 		PhysicsServer3D.body_set_space(self.body_id, p_world.space)
 		PhysicsServer3D.body_add_shape(self.body_id, self.shape)
@@ -32,7 +38,6 @@ class PhysicsBody:
 		PhysicsServer3D.body_set_mode(self.body_id, PhysicsServer3D.BODY_MODE_RIGID)
 
 		self.set_transform(transform)
-	
 	
 	func get_transform() -> Transform3D:
 		return PhysicsServer3D.body_get_state(self.body_id, PhysicsServer3D.BODY_STATE_TRANSFORM) as Transform3D
@@ -71,6 +76,9 @@ class PhysicsBody:
 	func set_bounciness(bounciness: float) -> void:
 		PhysicsServer3D.body_set_param(self.body_id, PhysicsServer3D.BODY_PARAM_BOUNCE, bounciness)
 	
+	func set_body_type(type: int) -> void:
+		PhysicsServer3D.body_set_mode(self.body_id, type)
+
 	static func get_type_name() -> StringName:
 		return "PhysicsBody"
 
@@ -80,13 +88,13 @@ class PhysicsJoint:
 	var joint_id : RID
 	var joint_type: JointType
 
-	func _init(body_a: RID, body_b: RID, type: JointType) -> void:
+	func _init(body_a: RID, body_b: RID, type: JointType, local_a: Vector3 = Vector3.ZERO, local_b: Vector3 = Vector3.ZERO) -> void:
 		self.joint_id = PhysicsServer3D.joint_create()
 		self.joint_type = type
 
 		match self.joint_type:
 			JointType.Pin:
-				PhysicsServer3D.joint_make_pin(self.joint_id, body_a, Vector3.ZERO, body_b, Vector3.ZERO)
+				PhysicsServer3D.joint_make_pin(self.joint_id, body_a, local_a, body_b, local_b)
 			JointType.Hinge:
 				PhysicsServer3D.joint_make_hinge(self.joint_id, body_a, Transform3D.IDENTITY, body_b, Transform3D.IDENTITY)
 			JointType.Slider:
@@ -98,12 +106,14 @@ class PhysicsJoint:
 
 
 
-
 	func set_collision_between_connected_bodies(enabled: bool) -> void:
 		PhysicsServer3D.joint_disable_collisions_between_bodies(self.joint_id, !enabled)
 
 	func set_pin_bias(bias: float) -> void:
 		PhysicsServer3D.pin_joint_set_param(self.joint_id, PhysicsServer3D.PIN_JOINT_BIAS, bias) 
+
+	func set_pin_damping(damping: float) -> void:
+		PhysicsServer3D.pin_joint_set_param(self.joint_id, PhysicsServer3D.PIN_JOINT_DAMPING, damping)
 
 	func dispose() -> void:
 		PhysicsServer3D.free_rid(self.joint_id)
@@ -136,9 +146,12 @@ class RopeJoint:
 class MeshComponent:
 	var instance: RID
 	var scenario: RID
+	# We NEED to store this bc meshes are RefCounted
+	var mesh: Mesh
 
 	func _init(base: Mesh, p_world: World3D) -> void:
 		self.instance = RenderingServer.instance_create()
+		self.mesh = base
 		self.scenario = p_world.scenario
 		RenderingServer.instance_set_base(self.instance, base.get_rid())
 		RenderingServer.instance_set_scenario(self.instance, self.scenario)
@@ -289,3 +302,40 @@ class Thrower:
 
 	static func get_type_name() -> StringName:
 		return "Thrower"
+
+class MagneticAttracter:
+	var strength: float
+	var threshold: float
+
+	static func get_type_name() -> StringName:
+		return "MagneticAttracter"
+	
+
+class MagneticTarget:
+	static func get_type_name() -> StringName:
+		return "MagneticTarget"
+
+class Area:
+	var id: RID
+
+	func _init(shape: Shape3D, xform: Transform3D, space: RID) -> void:
+		self.id = PhysicsServer3D.area_create()
+		self.set_transform(xform)
+		self.add_shape(shape)
+		PhysicsServer3D.area_set_ray_pickable(self.id, true)
+		PhysicsServer3D.area_set_monitorable(self.id, true)
+		PhysicsServer3D.area_set_space(self.id, space)
+
+		print("area space:", PhysicsServer3D.area_get_space(self.id))
+		print("shape count:", PhysicsServer3D.area_get_shape_count(self.id))
+		print("Collision layer:", PhysicsServer3D.area_get_collision_layer(self.id))
+		print("Collision mask:", PhysicsServer3D.area_get_collision_mask(self.id))
+
+	func add_shape(shape: Shape3D, xform = Transform3D.IDENTITY):
+		PhysicsServer3D.area_add_shape(self.id, shape.get_rid(), xform) 
+	
+	func set_transform(xform: Transform3D):
+		PhysicsServer3D.area_set_transform(self.id, xform)
+
+	static func get_type_name() -> StringName:
+		return "Area"

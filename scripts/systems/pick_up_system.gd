@@ -14,7 +14,7 @@ func _ready() -> void:
 	self.collectors_query.with_and_register(Components.Inventory.get_type_name())
 
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	self.collectables_query.each(func process_collectables(collectable_entity: RID, components: Array):
 		var collectable : Components.Collectable = components[0]
 		var collectable_phy : Components.PhysicsBody = components[1]
@@ -25,12 +25,15 @@ func _physics_process(delta: float) -> void:
 			var collector_phy : Components.PhysicsBody = collectors_components[1]
 			var collector_inv : Components.Inventory = collectors_components[2]
 			
-			var distance = collectable_phy.get_transform().origin.distance_to(collector_phy.get_transform().origin)
+			var collector_xform : Transform3D = collector_phy.get_transform()
+			var collectable_xform : Transform3D = collectable_phy.get_transform()
+
+			var distance = collectable_xform.origin.distance_to(collector_xform.origin)
 			
 			if distance > collector.attraction_range:
 				return
 			
-			var direction : Vector3 = collector_phy.get_transform().origin - collectable_phy.get_transform().origin 
+			var direction : Vector3 = collector_xform.origin - collectable_xform.origin 
 			var velocity = direction * collector.attraction_factor / collectable.weight
 			
 			collectable_phy.set_velocity(velocity)

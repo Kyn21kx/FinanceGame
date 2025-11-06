@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://b2271ootsknqm" path="res://scripts/systems/movement_system.gd" id="1_dc2kq"]
 [ext_resource type="Script" uid="uid://bwqpb3d10qxyp" path="res://scripts/systems/entity_spawn_system.gd" id="1_ypt0w"]
 [ext_resource type="Material" uid="uid://dfywvxmc6ljyy" path="res://materials/test_player.tres" id="2_6mnxl"]
-[ext_resource type="Script" uid="uid://c3cx1tdqnfacf" path="res://scripts/systems/rendering_system.gd" id="2_iyuba"]
+[ext_resource type="Script" uid="uid://c3cx1tdqnfacf" path="res://scripts/systems/scene_systems.gd" id="2_iyuba"]
 [ext_resource type="Script" uid="uid://cl4srd40jb55t" path="res://scripts/systems/pick_up_system.gd" id="5_5gf4p"]
 [ext_resource type="Material" uid="uid://crkr2yoi6vwmh" path="res://materials/floor_test.tres" id="6_5o5w8"]
 [ext_resource type="Material" uid="uid://c7fj3iv3ggbrm" path="res://materials/WallMaterial.tres" id="6_7hjm2"]
@@ -45,13 +45,12 @@ player_layer = 2
 coin_model = SubResource("CylinderMesh_7hjm2")
 coin_shape = SubResource("CylinderShape3D_5o5w8")
 
+[node name="SceneSystems" type="Node" parent="."]
+script = ExtResource("2_iyuba")
+
 [node name="MovementSystem" type="Node" parent="."]
 script = ExtResource("1_dc2kq")
 metadata/_custom_type_script = "uid://b2271ootsknqm"
-
-[node name="RenderingSystem" type="Node" parent="."]
-script = ExtResource("2_iyuba")
-metadata/_custom_type_script = "uid://c3cx1tdqnfacf"
 
 [node name="PickUpSystem" type="Node" parent="."]
 script = ExtResource("5_5gf4p")
