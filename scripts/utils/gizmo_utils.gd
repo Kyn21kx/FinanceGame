@@ -1,6 +1,17 @@
 @tool
 class_name GizmoUtils
 
+enum AxisType { AXIS_X, AXIS_Y, AXIS_Z }
+
+class GizmoPartInfo:
+	var entity: RID
+	var axis_type: AxisType
+
+	func _init(p_entity: RID, p_axis_type: AxisType) -> void:
+		self.entity = p_entity
+		self.axis_type = p_axis_type
+
+
 static func create_gizmo_material(color: Color, unshaded: bool = true, on_top: bool = true) -> StandardMaterial3D:
 	"""Create a material suitable for gizmo rendering"""
 	var mat := StandardMaterial3D.new()
@@ -346,34 +357,25 @@ static func create_translation_gizmo_parts(scenario: World3D, parent_entity: RID
 	
 	# X Axis (Red)
 	var x_arrow := create_arrow_entity(scenario, mat_x, Transform3D(Basis.from_euler(Vector3(0, 0, -PI/2)), Vector3.ZERO), length, "TranslateX_Arrow")
-	var x_handle := create_handle_entity(scenario, 0.12, mat_x, Transform3D(Basis.IDENTITY, Vector3(length, 0, 0)), "sphere", "TranslateX_Handle")
+	var x_handle_info := GizmoPartInfo.new(x_arrow, AxisType.AXIS_X)
 	FlecsScene.entity_add_child(parent_entity, x_arrow)
-	FlecsScene.entity_add_child(parent_entity, x_handle)
 	
 	var x_body : Components.PhysicsBody = FlecsScene.get_component_from_entity(x_arrow, Components.PhysicsBody.get_type_name())
-	parts[x_body.body_id] = x_arrow
-	var x_handle_body : Components.PhysicsBody = FlecsScene.get_component_from_entity(x_handle, Components.PhysicsBody.get_type_name())
-	parts[x_handle_body.body_id] = x_handle
+	parts[x_body.body_id] = x_handle_info
 	
 	# Y Axis (Green)
 	var y_arrow := create_arrow_entity(scenario, mat_y, Transform3D.IDENTITY, length, "TranslateY_Arrow")
-	var y_handle := create_handle_entity(scenario, 0.12, mat_y, Transform3D(Basis.IDENTITY, Vector3(0, length, 0)), "sphere", "TranslateY_Handle")
 	FlecsScene.entity_add_child(parent_entity, y_arrow)
-	FlecsScene.entity_add_child(parent_entity, y_handle)
 	var y_body : Components.PhysicsBody = FlecsScene.get_component_from_entity(y_arrow, Components.PhysicsBody.get_type_name())
-	parts[y_body.body_id] = y_arrow
-	var y_handle_body : Components.PhysicsBody = FlecsScene.get_component_from_entity(y_handle, Components.PhysicsBody.get_type_name())
-	parts[y_handle_body.body_id] = y_handle
+	var y_handle_info := GizmoPartInfo.new(y_arrow, AxisType.AXIS_Y)
+	parts[y_body.body_id] = y_handle_info
 	
 	# Z Axis (Blue)
 	var z_arrow := create_arrow_entity(scenario, mat_z, Transform3D(Basis.from_euler(Vector3(PI/2, 0, 0)), Vector3.ZERO), length, "TranslateZ_Arrow")
-	var z_handle := create_handle_entity(scenario, 0.12, mat_z, Transform3D(Basis.IDENTITY, Vector3(0, 0, length)), "sphere", "TranslateZ_Handle")
 	FlecsScene.entity_add_child(parent_entity, z_arrow)
-	FlecsScene.entity_add_child(parent_entity, z_handle)
 	var z_body : Components.PhysicsBody = FlecsScene.get_component_from_entity(z_arrow, Components.PhysicsBody.get_type_name())
-	parts[z_body.body_id] = z_arrow
-	var z_handle_body : Components.PhysicsBody = FlecsScene.get_component_from_entity(z_handle, Components.PhysicsBody.get_type_name())
-	parts[z_handle_body.body_id] = z_handle
+	var z_handle_info := GizmoPartInfo.new(z_arrow, AxisType.AXIS_Z)
+	parts[z_body.body_id] = z_handle_info
 	
 	return parts
 

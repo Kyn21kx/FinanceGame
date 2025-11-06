@@ -18,6 +18,7 @@ func generate_mesh() -> void:
 	var spawn_event = FlecsScene.create_raw_entity_with_tag("GIZMO_SPAWNED")
 	var parts : Dictionary = GizmoUtils.create_translation_gizmo_parts(world, gizmo_entity, 1.5)
 	FlecsScene.entity_emit(gizmo_entity, spawn_event, parts)
+	print("Emitted!")
 
 	# var gizmo_mesh : ArrayMesh = ModelECSCreator.create_axis_line_mesh(10)
 	# var mesh_inst := MeshInstance3D.new()
