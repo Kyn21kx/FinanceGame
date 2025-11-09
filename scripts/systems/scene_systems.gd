@@ -81,7 +81,7 @@ func gizmo_handle_selection_system():
 
 	var result = space.intersect_ray(self.editor_ray_query)
 	if (!Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
-	    || self.entities_by_renderable_rid.is_empty()
+		|| self.entities_by_renderable_rid.is_empty()
 		|| result == null
 		|| result.is_empty()
 		|| self.gizmo_handle_info != null):
@@ -90,8 +90,8 @@ func gizmo_handle_selection_system():
 	self.gizmo_base_position = result.position
 	self.gizmo_handle_info = self.entities_by_renderable_rid.get(result.rid)
 	assert(gizmo_handle_info != null,
-	    "Entities by renderable id dictionary (" + str(self.entities_by_renderable_rid) +
-	    ") does not contain collidable instance " + str(result.rid))
+		"Entities by renderable id dictionary (" + str(self.entities_by_renderable_rid) +
+		") does not contain collidable instance " + str(result.rid))
 
 
 func rope_joint_system(_entity: RID, components: Array):

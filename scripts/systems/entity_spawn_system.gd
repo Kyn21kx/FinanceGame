@@ -69,8 +69,9 @@ func _ready() -> void:
 	self._make_coin(Vector3(-2, 0, -2.5))
 	self._make_coin(Vector3(-2.5, 0, -3))
 	self._make_coin(Vector3(-1, 0, -3.5))
-
-
+	
+	self._make_camera()
+	
 	self._make_env_object(self.box_mesh, 10)
 	
 	self._make_ball()
@@ -91,6 +92,10 @@ func _make_ball() -> void:
 	FlecsScene.entity_add_component_instance(ball, Components.MeshComponent.get_type_name(), mesh_comp)
 	FlecsScene.entity_add_component_instance(ball, Components.Bag.get_type_name(), bag_comp)
 	FlecsScene.entity_add_component_instance(ball, Components.MagneticAttracter.get_type_name(), attracter)
+	
+	var camera_follow_comp := Components.CameraFollow.new(1)
+	FlecsScene.entity_add_component_instance(ball, Components.CameraFollow.get_type_name(), camera_follow_comp)
+
 
 # TODO: Allow them to make them from a typed resource
 func _make_env_object(mesh: Mesh, weight: float) -> void:
@@ -138,11 +143,13 @@ func _make_player(controller_comp: Components.Controller) -> void:
 	
 	var inventory_comp := Components.Inventory.new()
 	FlecsScene.entity_add_component_instance(player, Components.Inventory.get_type_name(), inventory_comp)
-
+	
 	var thrower_comp := Components.Thrower.new()
 	thrower_comp.throw_force = 30
 	FlecsScene.entity_add_component_instance(player, Components.Thrower.get_type_name(), thrower_comp)
-
+	
+	var camera_follow_comp := Components.CameraFollow.new(2)
+	FlecsScene.entity_add_component_instance(player, Components.CameraFollow.get_type_name(), camera_follow_comp)
 
 func _make_coin(position: Vector3) -> void:
 	var coin : RID = FlecsScene.create_raw_entity()
@@ -165,6 +172,13 @@ func _make_coin(position: Vector3) -> void:
 	collectable_comp.weight = 2
 	FlecsScene.entity_add_component_instance(coin, Components.Collectable.get_type_name(), collectable_comp)
 
+func _make_camera() -> void:
+	var camera_node = $"../Camera3D"
+	
+	var camera : RID = FlecsScene.create_raw_entity() # not sure if this can be the camera3D instance itself, I mean it does have an RID...
+	var camera_comp := Components.Camera.new(camera_node)
+	
+	FlecsScene.entity_add_component_instance(camera, Components.Camera.get_type_name(), camera_comp)
 
 func _process(delta: float) -> void:
 	pass

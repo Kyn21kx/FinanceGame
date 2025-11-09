@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://17diqbcutb3p"]
+[gd_scene load_steps=18 format=3 uid="uid://17diqbcutb3p"]
 
 [ext_resource type="Script" uid="uid://b2271ootsknqm" path="res://scripts/systems/movement_system.gd" id="1_dc2kq"]
 [ext_resource type="Script" uid="uid://bwqpb3d10qxyp" path="res://scripts/systems/entity_spawn_system.gd" id="1_ypt0w"]
@@ -8,6 +8,7 @@
 [ext_resource type="Material" uid="uid://crkr2yoi6vwmh" path="res://materials/floor_test.tres" id="6_5o5w8"]
 [ext_resource type="Material" uid="uid://c7fj3iv3ggbrm" path="res://materials/WallMaterial.tres" id="6_7hjm2"]
 [ext_resource type="Script" uid="uid://dsn53ggkji2d0" path="res://scripts/systems/bag_system.gd" id="6_boodp"]
+[ext_resource type="Script" uid="uid://bf5pb7emmodrb" path="res://scripts/systems/camera_system.gd" id="7_ulcth"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_ypt0w"]
 material = ExtResource("2_6mnxl")
@@ -60,6 +61,9 @@ script = ExtResource("6_boodp")
 object_drag_strength = 7.0
 object_drag_length = 2.0
 metadata/_custom_type_script = "uid://dsn53ggkji2d0"
+
+[node name="CameraSystem" type="Node" parent="."]
+script = ExtResource("7_ulcth")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.878525, 0.477695, 0, -0.477695, 0.878525, 0, 10.6069, 19.9432)
