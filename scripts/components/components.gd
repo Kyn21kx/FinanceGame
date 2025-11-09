@@ -321,7 +321,7 @@ class MagneticTarget:
 class Camera:
 	var camera : RID
 	var camera_ref : Camera3D
-	
+	var base_offset : float = 20.0
 	var fov : float = 50.0
 	var zoom : float = 0.0
 	
@@ -334,10 +334,11 @@ class Camera:
 
 
 class CameraFollow:
-	var Priority : int
+	var priority : int
+	var visibility_notifier : VisibleOnScreenNotifier3D
 	
 	func _init(priority : int) -> void:
-		self.Priority = priority
+		self.priority = priority
 	
 	static func get_type_name() -> StringName:
 		return "CameraFollow"
