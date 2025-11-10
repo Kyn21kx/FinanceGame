@@ -240,7 +240,7 @@ func _process(_delta: float) -> void:
 
 	var cam = self.get_viewport_consistent().get_camera_3d()
 
-	const MAX_GIZMO_SCALE := 10
+	const MAX_GIZMO_SCALE := 20
 	const MIN_GIZMO_SCALE := 1
 	const MAX_DISTANCE := 200
 

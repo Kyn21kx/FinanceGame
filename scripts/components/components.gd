@@ -82,6 +82,9 @@ class PhysicsBody:
 	func set_body_type(type: int) -> void:
 		PhysicsServer3D.body_set_mode(self.body_id, type)
 
+	static func get_readonly_props() -> Dictionary:
+		return {}
+	
 	static func get_type_name() -> StringName:
 		return "PhysicsBody"
 
@@ -122,6 +125,9 @@ class PhysicsJoint:
 		PhysicsServer3D.free_rid(self.joint_id)
 		self.joint_id = RID()
 
+	static func get_readonly_props() -> Dictionary:
+		return {}
+	
 	static func get_type_name() -> StringName:
 		return "PhysicsJoint"
 
@@ -143,6 +149,9 @@ class RopeJoint:
 	func set_strength(p_strength: float) -> void:
 		self.strength = p_strength
 	
+	static func get_readonly_props() -> Dictionary:
+		return {}
+	
 	static func get_type_name() -> StringName:
 		return "RopeJoint"
 
@@ -159,9 +168,11 @@ class MeshComponent:
 		RenderingServer.instance_set_base(self.instance, base.get_rid())
 		RenderingServer.instance_set_scenario(self.instance, self.scenario)
 
+	static func get_readonly_props() -> Dictionary:
+		return {}
+	
 	static func get_type_name() -> StringName:
 		return "MeshComponent"
-
 
 class Movement:
 	var direction: Vector3
@@ -170,6 +181,9 @@ class Movement:
 	var jump_force: float
 
 	var state: MovState = MovState.Idle
+	
+	static func get_readonly_props() -> Dictionary:
+		return { "direction": true, "speed_mod_factor": true, "state": true}
 	
 	static func get_type_name() -> StringName:
 		return "Movement"
@@ -191,6 +205,9 @@ class Dash:
 	func get_end_time() -> float:
 		# t = d / V
 		return self.max_distance / self.speed
+	
+	static func get_readonly_props() -> Dictionary:
+		return { "direction": true, "curr_dashing_time": true, "curr_cooldown_time": true }
 	
 	static func get_type_name() -> StringName:
 		return "Dash"
@@ -217,6 +234,9 @@ class Controller:
 		var vertical: float = Input.get_axis(self.backward_key, self.forward_key)
 		return Vector2(horizontal, -vertical)
 
+	static func get_readonly_props() -> Dictionary:
+		return {}
+	
 	static func get_type_name() -> StringName:
 		return "Controller"
 
@@ -247,6 +267,9 @@ class Inventory:
 	func remove(item : Item, amount : float):
 		set_amount(item, max(0, get_amount(item) - amount))
 	
+	static func get_readonly_props() -> Dictionary:
+		return {}
+	
 	static func get_type_name() -> StringName:
 		return "Inventory"
 
@@ -255,6 +278,9 @@ class Collectable:
 	var item : Item
 	var amount : float
 	var weight: float
+	
+	static func get_readonly_props() -> Dictionary:
+		return {}
 	
 	static func get_type_name() -> StringName:
 		return "Collectable"
@@ -265,18 +291,27 @@ class Collector:
 	var attraction_factor : float
 	var pickup_range : float
 	
+	static func get_readonly_props() -> Dictionary:
+		return {}
+	
 	static func get_type_name() -> StringName:
 		return "Collector"
 
 
 class Player:
 
+	static func get_readonly_props() -> Dictionary:
+		return {}
+	
 	static func get_type_name() -> StringName:
 		return "Player"
 
 
 class Bag:
 	var last_player_id: RID
+	static func get_readonly_props() -> Dictionary:
+		return {}
+	
 	static func get_type_name() -> StringName:
 		return "Bag"
 
@@ -286,10 +321,13 @@ class Throwable:
 	var state: ThrowableState = ThrowableState.Released
 	var thrower_id: RID = rid_from_int64(0)
 
-	func _init(p_weight: float) -> void:
+	func _init(p_weight: float = 0) -> void:
 		self.weight = p_weight
 		pass
 
+	static func get_readonly_props() -> Dictionary:
+		return {}
+	
 	static func get_type_name() -> StringName:
 		return "Throwable"
 
@@ -297,6 +335,9 @@ class Thrower:
 	var throw_force: float
 	var throwing_direction: Vector3
 
+	static func get_readonly_props() -> Dictionary:
+		return {"throwing_direction": true}
+	
 	static func get_type_name() -> StringName:
 		return "Thrower"
 
@@ -304,11 +345,17 @@ class MagneticAttracter:
 	var strength: float
 	var threshold: float
 
+	static func get_readonly_props() -> Dictionary:
+		return {}
+	
 	static func get_type_name() -> StringName:
 		return "MagneticAttracter"
 	
 
 class MagneticTarget:
+	static func get_readonly_props() -> Dictionary:
+		return {}
+	
 	static func get_type_name() -> StringName:
 		return "MagneticTarget"
 
@@ -334,5 +381,8 @@ class Area:
 	func set_transform(xform: Transform3D):
 		PhysicsServer3D.area_set_transform(self.id, xform)
 
+	static func get_readonly_props() -> Dictionary:
+		return {}
+	
 	static func get_type_name() -> StringName:
 		return "Area"

@@ -355,7 +355,11 @@ static func create_translation_gizmo_parts(world_pos: Vector3, scenario: World3D
 			var body : Components.PhysicsBody = components[0]
 			var xform : Transform3D = body.get_transform()
 			xform.origin = world_pos
-			pass
+			body.set_transform(xform)
+			# var add_comp := func _add(p_entity: RID, p_xform: Transform3D):
+			# 	FlecsScene.entity_add_component_instance(p_entity, "Transform3D", p_xform)
+			# 	add_comp.call_deferred(_child, xform)
+			
 		)
 		return Globals.gizmo_entities_by_renderable_rid
 	

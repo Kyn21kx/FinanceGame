@@ -3,6 +3,9 @@ extends Node
 
 @export_tool_button("Generate mesh and gizmo", "Callable") var btn := self.generate_mesh
 
+@export_tool_button("Save Scene", "Callable") var save_btn := self.save_scene
+@export_tool_button("Load Scene", "Callable") var load_btn := self.load_scene
+
 @export var prefab_test: PackedScene
 var time: float = 0
 var last_spawn: int = 0
@@ -12,6 +15,14 @@ func _add_to_gizmo_recursive(entity: RID):
 	# Temporary relation that will be removed
 	FlecsScene.entity_add_relation(Globals.GIZMO_ID, Relationships.MANIPULATING, entity)
 	FlecsScene.entity_each_child(entity, self._add_to_gizmo_recursive)
+
+func save_scene():
+	FlecsScene.save_scene("res://world.json")
+	pass
+
+func load_scene():
+	FlecsScene.load_scene("res://world.json")
+	pass
 
 func generate_mesh() -> void:
 	var world : World3D = null
