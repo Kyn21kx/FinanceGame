@@ -80,11 +80,14 @@ func calculate_aim(controller: Components.Controller, player_pos: Vector3, throw
 
 	return result_wrapper[0]
 
-func _throwing_system_input(_player: RID, components: Array):
+func _throwing_system_input(player: RID, components: Array):
 	var controller : Components.Controller = components[1]
 	var player_body : Components.PhysicsBody = components[2]
 	var player_xform = player_body.get_transform()
-	self.throwables_query.each(func _iter_throwables(_throwable: RID, throwable_comps: Array):
+	self.throwables_query.each(func _iter_throwables(throwable: RID, throwable_comps: Array):
+		if (throwable == player):
+			# Players are throwable, so, let's avoid hitting ourselves
+			return
 		# Do a distance check and if it is close enough trigger the 
 		var throwable_info : Components.Throwable = throwable_comps[0]
 		var throwable_body : Components.PhysicsBody = throwable_comps[1]
@@ -97,8 +100,8 @@ func _throwing_system_input(_player: RID, components: Array):
 			return
 
 		if (!Input.is_action_pressed(controller.throw_action)):
-			if (throwable_info.thrower_id != _player): return
-			var thrower_info : Components.Thrower = FlecsScene.get_component_from_entity(_player, Components.Thrower.get_type_name())
+			if (throwable_info.thrower_id != player): return
+			var thrower_info : Components.Thrower = FlecsScene.get_component_from_entity(player, Components.Thrower.get_type_name())
 			if (throwable_info.state == Components.ThrowableState.Dragging):
 				thrower_info.throwing_direction = self.calculate_aim(controller, player_xform.origin, throwable_xform.origin) # Handles auto aim when close to the bag
 				throwable_info.state = Components.ThrowableState.Thrown
@@ -107,7 +110,7 @@ func _throwing_system_input(_player: RID, components: Array):
 		elif(throwable_info.state == Components.ThrowableState.Released):
 			# Transition to dragging
 			throwable_info.state = Components.ThrowableState.Dragging
-			throwable_info.thrower_id = _player
+			throwable_info.thrower_id = player
 	)
 	
 
@@ -125,7 +128,7 @@ func handle_throwables_physics(_throwable: RID, throwable_comps: Array):
 			self.drag_object(throwable_info, throwable_body)
 		Components.ThrowableState.Thrown:
 			# Detach the joint
-			self.release_object(throwable_info.thrower_id)
+			self.release_object.call_deferred(throwable_info.thrower_id)
 			var force := thrower_info.throwing_direction * thrower_info.throw_force
 			throwable_body.set_gravity_scale(1)
 			throwable_body.apply_impulse(force)
@@ -148,19 +151,19 @@ func drag_object(throwable_info: Components.Throwable, throwable_body: Component
 	var joint_comp : Components.RopeJoint = FlecsScene.get_component_from_entity(throwable_info.thrower_id, Components.RopeJoint.get_type_name())
 	var thrower_body : Components.PhysicsBody = FlecsScene.get_component_from_entity(throwable_info.thrower_id, Components.PhysicsBody.get_type_name())
 	if joint_comp != null:
-		# Force the y position to be above the ground
-		# var xform : Transform3D = throwable_body.get_transform()
-		# const offset := 1
-		# xform.origin.y = thrower_body.get_transform().origin.y + offset
-		# throwable_body.set_transform(xform)
-		# apply_rotation_sync(joint_comp, throwable_body.get_transform(), xform)
 		return
-	# var local_pin_offset := Vector3.UP + (Vector3.FORWARD * self.object_drag_length)
 	throwable_body.set_gravity_scale(0)
+
+	var add_rope_comp := func _add_rope(p_joint):
+		FlecsScene.entity_add_component_instance(throwable_info.thrower_id, Components.RopeJoint.get_type_name(), p_joint)
+
 	var joint := Components.RopeJoint.new(thrower_body, throwable_body)
 	joint.set_length(self.object_drag_length)
 	joint.set_strength(self.object_drag_strength)
-	FlecsScene.entity_add_component_instance(throwable_info.thrower_id, Components.RopeJoint.get_type_name(), joint)
+
+	add_rope_comp.call_deferred(joint)
+
+	
 
 
 func apply_rotation_sync(rope_joint: Components.RopeJoint, carrier_xform: Transform3D, carried_xform: Transform3D):
@@ -231,7 +234,7 @@ func _physics_process(_delta: float):
 			# This is laid out like this for debug purposes, move the if statement up so this does not evaluate all the time
 			DebugDraw3D.draw_text(player_xform.origin + (Vector3.RIGHT * 2), "Able to hit!", 56)
 			DebugDraw3D.draw_text(bag_xform.origin + (Vector3.LEFT * 3), "Last player hit: " + str(bag_info.last_player_id), 56)
-			if !Input.is_key_pressed(controller.hit_key) || bag_info.last_player_id == player_entity:
+			if !Input.is_action_pressed(controller.hit_key) || bag_info.last_player_id == player_entity:
 				return
 			bag_body.apply_impulse(Vector3.UP * 5)
 			bag_info.last_player_id = player_entity

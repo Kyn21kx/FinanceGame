@@ -20,13 +20,13 @@ func _ready() -> void:
 	self.bag_query.with_and_register(Components.Bag.get_type_name())
 	self.bag_query.with_and_register(Components.PhysicsBody.get_type_name())
 
-func _handle_movement_state(delta: float, movement: Components.Movement, body: Components.PhysicsBody, dash: Components.Dash):
 
+
+func _handle_movement_state(delta: float, movement: Components.Movement, body: Components.PhysicsBody, dash: Components.Dash):
 	if (movement.state == Components.MovState.Dashing):
 		dash.cooldown_time = dash.DASH_COOLDOWN
 		_handle_dash(delta, movement, body, dash)
 		return
-	# TODO: Check airbone dashing
 
 	if (movement.state == Components.MovState.Jumped):
 		body.apply_impulse(Vector3.UP * movement.jump_force)
@@ -37,18 +37,17 @@ func _handle_movement_state(delta: float, movement: Components.Movement, body: C
 	var query := PhysicsRayQueryParameters3D.create(origin, origin - (Vector3.UP))
 	var ray_result : Dictionary = space_state.intersect_ray(query)
 	var vel_y_comp : float = absf(body.get_velocity().y)
-	const threshold : float = 0.3
+	const threshold : float = 0.5
+
 	if (ray_result.is_empty()):
 		if (vel_y_comp > threshold):
 			movement.state = Components.MovState.Airbone
-	else:
-		movement.state = Components.MovState.Idle
+			body.set_gravity_scale(5)
 
-	if (movement.state == Components.MovState.Airbone):
-		# Increase the gravity of our body
-		body.set_gravity_scale(5)
-	else:
+	elif vel_y_comp == 0 and movement.state != Components.MovState.Idle: # Additional cond to avoid repeating the gravity scale setter
+		movement.state = Components.MovState.Idle
 		body.set_gravity_scale(1)
+
 
 
 	# TODO: Move to independent function when needed
@@ -85,17 +84,14 @@ func _handle_input(_entity: RID, components: Array):
 	var body : Components.PhysicsBody = components[3]
 	
 	var xform : Transform3D = body.get_transform()
+	var horizontal: float = Input.get_axis(controller.left_key, controller.right_key)
+	var vertical: float = Input.get_axis(controller.backward_key, controller.forward_key)
+	
 	var input := Vector3.ZERO
-	if (Input.is_key_pressed(controller.forward_key)):
-		input -= xform.basis.z
-	if (Input.is_key_pressed(controller.backward_key)):
-		input += xform.basis.z
-	if (Input.is_key_pressed(controller.left_key)):
-		input -= xform.basis.x
-	if (Input.is_key_pressed(controller.right_key)):
-		input += xform.basis.x
+	input += xform.basis.x * horizontal
+	input += xform.basis.z * -vertical
 
-	if (Input.is_key_pressed(controller.jump_key) && movement.state != Components.MovState.Airbone):
+	if (Input.is_action_pressed(controller.jump_key) && movement.state != Components.MovState.Airbone):
 		movement.state = Components.MovState.Jumped
 
 	input = input.normalized()
@@ -126,7 +122,7 @@ func _handle_input(_entity: RID, components: Array):
 		)
 
 
-	if (Input.is_key_pressed(controller.dash_key) && movement.state != Components.MovState.Dashing && dash.cooldown_time <= 0):
+	if (Input.is_action_pressed(controller.dash_key) && movement.state != Components.MovState.Dashing && dash.cooldown_time <= 0):
 		movement.state = Components.MovState.Dashing
 
 	movement.direction = input

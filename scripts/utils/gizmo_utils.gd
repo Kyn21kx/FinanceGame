@@ -312,7 +312,7 @@ static func create_handle_entity(scenario: World3D, radius: float, material: Mat
 static func create_arrow_entity(scenario: World3D, material: Material, transform: Transform3D = Transform3D.IDENTITY, length: float = 1.0, name: String = "GizmoArrow") -> RID:
 	"""Create an arrow entity pointing up (Y+)"""
 	var mesh := create_arrow_mesh(length * 0.8, length * 0.2)
-	var entity := FlecsScene.create_raw_entity_with_name(name)
+	var entity := FlecsScene.create_raw_entity_with_tag(name)
 	
 	mesh.surface_set_material(0, material)
 	var mesh_comp := Components.MeshComponent.new(mesh, scenario)
@@ -344,10 +344,21 @@ static func create_cone_entity(scenario: World3D, radius: float, height: float, 
 	return entity
 
 
-# === Composite Gizmo Builders ===
-
-static func create_translation_gizmo_parts(scenario: World3D, parent_entity: RID, length: float = 1.0) -> Dictionary:
+static func create_translation_gizmo_parts(world_pos: Vector3, scenario: World3D, length: float = 1.0) -> Dictionary:
 	"""Create all parts for a translation gizmo and parent them. Returns entity RIDs."""
+	var query := Query.new()
+	query.with_and_register(Components.PhysicsBody.get_type_name())
+	query.with_relation(Relationships.child_of(), Globals.GIZMO_ID)
+	if (Globals.gizmo_entities_by_renderable_rid != null and !Globals.gizmo_entities_by_renderable_rid.is_empty()):
+
+		query.each(func _iter(_child: RID, components: Array):
+			var body : Components.PhysicsBody = components[0]
+			var xform : Transform3D = body.get_transform()
+			xform.origin = world_pos
+			pass
+		)
+		return Globals.gizmo_entities_by_renderable_rid
+	
 	var parts := {}
 	
 	# Materials
@@ -358,24 +369,32 @@ static func create_translation_gizmo_parts(scenario: World3D, parent_entity: RID
 	# X Axis (Red)
 	var x_arrow := create_arrow_entity(scenario, mat_x, Transform3D(Basis.from_euler(Vector3(0, 0, -PI/2)), Vector3.ZERO), length, "TranslateX_Arrow")
 	var x_handle_info := GizmoPartInfo.new(x_arrow, AxisType.AXIS_X)
-	FlecsScene.entity_add_child(parent_entity, x_arrow)
+	FlecsScene.entity_add_child(Globals.GIZMO_ID, x_arrow)
 	
 	var x_body : Components.PhysicsBody = FlecsScene.get_component_from_entity(x_arrow, Components.PhysicsBody.get_type_name())
 	parts[x_body.body_id] = x_handle_info
 	
 	# Y Axis (Green)
 	var y_arrow := create_arrow_entity(scenario, mat_y, Transform3D.IDENTITY, length, "TranslateY_Arrow")
-	FlecsScene.entity_add_child(parent_entity, y_arrow)
+	FlecsScene.entity_add_child(Globals.GIZMO_ID, y_arrow)
 	var y_body : Components.PhysicsBody = FlecsScene.get_component_from_entity(y_arrow, Components.PhysicsBody.get_type_name())
 	var y_handle_info := GizmoPartInfo.new(y_arrow, AxisType.AXIS_Y)
 	parts[y_body.body_id] = y_handle_info
 	
 	# Z Axis (Blue)
 	var z_arrow := create_arrow_entity(scenario, mat_z, Transform3D(Basis.from_euler(Vector3(PI/2, 0, 0)), Vector3.ZERO), length, "TranslateZ_Arrow")
-	FlecsScene.entity_add_child(parent_entity, z_arrow)
+	FlecsScene.entity_add_child(Globals.GIZMO_ID, z_arrow)
 	var z_body : Components.PhysicsBody = FlecsScene.get_component_from_entity(z_arrow, Components.PhysicsBody.get_type_name())
 	var z_handle_info := GizmoPartInfo.new(z_arrow, AxisType.AXIS_Z)
 	parts[z_body.body_id] = z_handle_info
+	
+	
+	query.each(func _iter(_child: RID, components: Array):
+		var body : Components.PhysicsBody = components[0]
+		var xform : Transform3D = body.get_transform()
+		xform.origin = world_pos
+		pass
+	)
 	
 	return parts
 
