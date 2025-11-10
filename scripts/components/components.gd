@@ -57,6 +57,9 @@ class PhysicsBody:
 	func set_gravity_scale(scale: float) -> void:
 		PhysicsServer3D.body_set_param(self.body_id, PhysicsServer3D.BODY_PARAM_GRAVITY_SCALE, scale) 
 		pass
+
+	func get_gravity_scale() -> float:
+		return PhysicsServer3D.body_get_param(self.body_id, PhysicsServer3D.BODY_PARAM_GRAVITY_SCALE) 
 	
 	func apply_force(force: Vector3) -> void:
 		PhysicsServer3D.body_apply_central_force(self.body_id, force)
@@ -195,30 +198,24 @@ class Dash:
 
 class Controller:
 	# TODO: Maybe these could be functions or actions to make sure it works for controllers
-	var forward_key: int
-	var backward_key: int
-	var right_key: int
-	var left_key: int
+	var forward_key: StringName
+	var backward_key: StringName
+	var right_key: StringName
+	var left_key: StringName
 
-	var jump_key: int
+	var horizontal_axis: StringName
+	var vertical_axis: StringName
 
-	var dash_key: int
-	var hit_key: int
+	var jump_key: StringName
+
+	var dash_key: StringName
+	var hit_key: StringName
 	var throw_action: StringName
 	
 	func get_axis_left() -> Vector2:
-		var result := Vector2.ZERO
-
-		if (Input.is_key_pressed(self.forward_key)):
-			result += Vector2.UP
-		if (Input.is_key_pressed(self.backward_key)):
-			result += Vector2.DOWN
-		if (Input.is_key_pressed(self.left_key)):
-			result -= Vector2.RIGHT
-		if (Input.is_key_pressed(self.right_key)):
-			result += Vector2.RIGHT
-
-		return result
+		var horizontal: float = Input.get_axis(self.left_key, self.right_key)
+		var vertical: float = Input.get_axis(self.backward_key, self.forward_key)
+		return Vector2(horizontal, -vertical)
 
 	static func get_type_name() -> StringName:
 		return "Controller"
