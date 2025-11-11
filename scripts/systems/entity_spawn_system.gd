@@ -96,7 +96,6 @@ func _make_ball() -> void:
 	var camera_target_comp := Components.CameraTarget.new(1)
 	FlecsScene.entity_add_component_instance(ball, Components.CameraTarget.get_type_name(), camera_target_comp)
 
-
 # TODO: Allow them to make them from a typed resource
 func _make_env_object(mesh: Mesh, weight: float) -> void:
 	var obj : RID = FlecsScene.create_raw_entity_with_name("Obstacle")
@@ -184,7 +183,7 @@ func _make_camera() -> void:
 	camera_comp.max_zoom_out = 100
 	camera_comp.target_padding = 4
 	camera_comp.pivot = camera_node.position
-	camera_comp.do_look_at_primary_objective = true
+	camera_comp.do_look_at_primary_objective = false
 	
 	FlecsScene.entity_add_component_instance(camera, Components.Camera.get_type_name(), camera_comp)
 
