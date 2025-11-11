@@ -321,9 +321,14 @@ class MagneticTarget:
 class Camera:
 	var camera : RID
 	var camera_ref : Camera3D
-	var base_offset : float = 20.0
-	var fov : float = 50.0
-	var zoom : float = 0.0
+	var pivot : Vector3
+	var zoom_direction : Vector3
+	var zoom_in_speed : float
+	var zoom_out_seed : float
+	var max_zoom_in : float
+	var max_zoom_out : float
+	var target_padding : float
+	var do_look_at_primary_objective : bool = false
 	
 	func _init(camera : Camera3D) -> void:
 		self.camera = camera.get_camera_rid()
@@ -333,15 +338,14 @@ class Camera:
 		return "Camera"
 
 
-class CameraFollow:
+class CameraTarget:
 	var priority : int
-	var visibility_notifier : VisibleOnScreenNotifier3D
 	
 	func _init(priority : int) -> void:
 		self.priority = priority
 	
 	static func get_type_name() -> StringName:
-		return "CameraFollow"
+		return "CameraTarget"
 
 
 class Area:

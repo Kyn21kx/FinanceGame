@@ -93,8 +93,8 @@ func _make_ball() -> void:
 	FlecsScene.entity_add_component_instance(ball, Components.Bag.get_type_name(), bag_comp)
 	FlecsScene.entity_add_component_instance(ball, Components.MagneticAttracter.get_type_name(), attracter)
 	
-	var camera_follow_comp := Components.CameraFollow.new(1)
-	FlecsScene.entity_add_component_instance(ball, Components.CameraFollow.get_type_name(), camera_follow_comp)
+	var camera_target_comp := Components.CameraTarget.new(1)
+	FlecsScene.entity_add_component_instance(ball, Components.CameraTarget.get_type_name(), camera_target_comp)
 
 
 # TODO: Allow them to make them from a typed resource
@@ -148,8 +148,8 @@ func _make_player(controller_comp: Components.Controller) -> void:
 	thrower_comp.throw_force = 30
 	FlecsScene.entity_add_component_instance(player, Components.Thrower.get_type_name(), thrower_comp)
 	
-	var camera_follow_comp := Components.CameraFollow.new(2)
-	FlecsScene.entity_add_component_instance(player, Components.CameraFollow.get_type_name(), camera_follow_comp)
+	var camera_target := Components.CameraTarget.new(2)
+	FlecsScene.entity_add_component_instance(player, Components.CameraTarget.get_type_name(), camera_target)
 
 func _make_coin(position: Vector3) -> void:
 	var coin : RID = FlecsScene.create_raw_entity()
@@ -173,10 +173,18 @@ func _make_coin(position: Vector3) -> void:
 	FlecsScene.entity_add_component_instance(coin, Components.Collectable.get_type_name(), collectable_comp)
 
 func _make_camera() -> void:
-	var camera_node = $"../Camera3D"
-	
-	var camera : RID = FlecsScene.create_raw_entity() # not sure if this can be the camera3D instance itself, I mean it does have an RID...
+	var camera_node : Camera3D = $"../Camera3D"
+	var camera : RID = FlecsScene.create_raw_entity()
 	var camera_comp := Components.Camera.new(camera_node)
+	
+	camera_comp.zoom_in_speed = 0.2
+	camera_comp.zoom_out_seed = 2
+	camera_comp.zoom_direction = camera_node.basis.z * -1
+	camera_comp.max_zoom_in = 10
+	camera_comp.max_zoom_out = 100
+	camera_comp.target_padding = 4
+	camera_comp.pivot = camera_node.position
+	camera_comp.do_look_at_primary_objective = true
 	
 	FlecsScene.entity_add_component_instance(camera, Components.Camera.get_type_name(), camera_comp)
 

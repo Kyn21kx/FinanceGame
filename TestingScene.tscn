@@ -66,7 +66,7 @@ metadata/_custom_type_script = "uid://dsn53ggkji2d0"
 script = ExtResource("7_ulcth")
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.878525, 0.477695, 0, -0.477695, 0.878525, 0, 10.6069, 19.9432)
+transform = Transform3D(1, 0, 0, 0, 0.762544, 0.646936, 0, -0.646936, 0.762544, 0, 16.7461, 19.8587)
 environment = SubResource("Environment_5gf4p")
 fov = 45.0
 
