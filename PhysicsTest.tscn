@@ -1,13 +1,18 @@
-[gd_scene load_steps=5 format=3 uid="uid://c37xemanlh67j"]
+[gd_scene load_steps=7 format=3 uid="uid://c37xemanlh67j"]
 
 [ext_resource type="Material" uid="uid://crkr2yoi6vwmh" path="res://materials/floor_test.tres" id="1_48s3g"]
 [ext_resource type="Script" uid="uid://7sut20oko3d3" path="res://tester.gd" id="1_g3hqd"]
 [ext_resource type="PackedScene" uid="uid://cdjj0i8kgyym0" path="res://models/placeholders/kenney_mini-characters/Models/FBX format/character-female-e.fbx" id="2_d86h8"]
 [ext_resource type="Script" uid="uid://c3cx1tdqnfacf" path="res://scripts/systems/scene_systems.gd" id="4_d86h8"]
+[ext_resource type="Script" uid="uid://b2271ootsknqm" path="res://scripts/systems/movement_system.gd" id="5_rjh52"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_rjh52"]
 
 [node name="Node3D" type="Node3D"]
 script = ExtResource("1_g3hqd")
 prefab_test = ExtResource("2_d86h8")
+
+[node name="EntityManagementSystem" type="EntityManagementSystem" parent="."]
 
 [node name="CSGBox3D" type="CSGBox3D" parent="."]
 transform = Transform3D(34.2744, 0, 0, 0, 0.169577, 0, 0, 0, 27.1921, 0, -0.986538, -2.30784)
@@ -22,12 +27,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.855891, 2.90126, 9.30961)
 [node name="SceneSystems" type="Node" parent="."]
 script = ExtResource("4_d86h8")
 
-[node name="TestCubeSystem" type="TestCubeSystem" parent="SceneSystems"]
-
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.53175, 4.89593, 0.0519927)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("CapsuleMesh_rjh52")
 metadata/comp_data = {
 &"Movement": {
 "direction": Vector3(0, 0, 0),
@@ -37,3 +41,7 @@ metadata/comp_data = {
 "state": 0
 }
 }
+
+[node name="MovementSystem" type="Node" parent="."]
+script = ExtResource("5_rjh52")
+metadata/_custom_type_script = "uid://b2271ootsknqm"

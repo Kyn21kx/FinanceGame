@@ -20,6 +20,8 @@ var registered_components_name := [
 	Components.Thrower.get_type_name()
 ]
 
+
+static var instance: NodeComponentAdapter
 var editor_interface : EditorInterface = null
 var current_object : Object = null
 var current_container: Control = null
@@ -31,20 +33,18 @@ var global_metadata: Dictionary[Node, Dictionary] = {}
 func _can_handle(object: Object) -> bool:
 	return object is MeshInstance3D
 
-
 func safe_add_child_to(parent: Node, instance: Node):
-	if (parent != null):
-		print("Null parent")
+	if (parent == null):
+		print("Null parent for child: ", instance.name)
 		return
-	if (instance != null):
-		print("Null child")
+	if (instance == null):
+		print("Null child for parent: ", parent.name)
 		return
 
 	if (instance.get_parent() != null):
 		instance.reparent(parent)
 		return
 	parent.add_child(instance)
-
 
 func populate_dropdown(dropdown: OptionButton):
 	dropdown.clear()
@@ -74,7 +74,6 @@ func render_component_properties(sample_instance):
 		safe_add_child_to(self.current_header, control_node)
 
 
-
 func render_property(comp_instance, prop_name: String, type: int, is_read_only: bool = false) -> Control:
 	var current_value = comp_instance.get(prop_name)
 	
@@ -85,6 +84,8 @@ func render_property(comp_instance, prop_name: String, type: int, is_read_only: 
 	var label = Label.new()
 	label.text = prop_name.capitalize() + ":"
 	label.custom_minimum_size.x = 120
+	if is_read_only:
+		label.text += " (Read Only)"
 	safe_add_child_to(hbox, label)
 	
 	# Create appropriate input control based on type
@@ -146,7 +147,18 @@ func fetch_component_data() -> void:
 			var index = self.registered_components_name.find(comp_key)
 			var instance = self.registered_components[index].new()
 			print("Instance at runtime? ", instance)
+			var fields : Dictionary = comp_dict[comp_key]
+			print(fields)
+			
+			self.current_header = self.component_header_scene.instantiate() as ComponentEditor
+			self.current_header.set_comp_name(instance.get_type_name())
+
+			safe_add_child_to(self.current_container, self.current_header)
+			
+			for field_key in fields:
+				instance.set(field_key, fields[field_key])
 			render_component_properties(instance)
+
 
 func option_dropdown() -> Control:
 	var dropdown := OptionButton.new()
@@ -157,6 +169,9 @@ func option_dropdown() -> Control:
 	populate_dropdown(dropdown)
 
 	return dropdown
+
+func _init() -> void:
+	instance = self
 
 func _parse_begin(_object: Object) -> void:
 	self.current_object = _object

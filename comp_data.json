@@ -1,0 +1,1 @@
+{"MeshInstance3D:<MeshInstance3D#2378807986107>":{"Dash":{"cooldown_time":2.0,"curr_dashing_time":0.0,"direction":"(0.0, 0.0, 0.0)","max_distance":10.0,"speed":10.0},"Movement":{"direction":"(0.0, 0.0, 0.0)","jump_force":10.0,"speed":20.0,"speed_mod_factor":1.0,"state":0}}}

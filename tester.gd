@@ -24,6 +24,44 @@ func load_scene():
 	FlecsScene.load_scene("res://world.json")
 	pass
 
+func copy_ecs_data():
+
+	var registered_components := [
+		Components.Dash,
+		Components.Movement,
+		Components.Controller,
+		Components.Player,
+		Components.Throwable,
+		Components.Thrower
+	]
+	# TODO: make into a map
+	var registered_components_name := [
+		Components.Dash.get_type_name(),
+		Components.Movement.get_type_name(),
+		Components.Controller.get_type_name(),
+		Components.Player.get_type_name(),
+		Components.Throwable.get_type_name(),
+		Components.Thrower.get_type_name()
+	]
+	# Walk through the global node data (just a file), get the 
+	var file := FileAccess.open("res://comp_data.json", FileAccess.READ)
+	var json : String = file.get_as_text()
+	var comp_data: Dictionary = JSON.parse_string(json)
+
+	for comp_dict: Dictionary in comp_data.values():
+		var entity : RID = FlecsScene.create_raw_entity()
+		for comp_key in comp_dict:
+			# Find index??
+			var index = registered_components_name.find(comp_key)
+			var instance = registered_components[index].new()
+			var fields : Dictionary = comp_dict[comp_key]
+		
+			for field_key in fields:
+				instance.set(field_key, fields[field_key])
+
+			FlecsScene.entity_add_component_instance(entity, instance.get_type_name(), instance)
+	
+
 func generate_mesh() -> void:
 	var world : World3D = null
 	if Engine.is_editor_hint():
@@ -45,11 +83,26 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 	# self._serialize_components()
+	self.copy_ecs_data()
 	self.generate_mesh()
 	pass
 
+func check_for_save():
+	if (Input.is_key_pressed(KEY_CTRL) and Input.is_key_pressed(KEY_S)):
+		print("Saving")
+		var comp_data: Dictionary[Node, Dictionary] = NodeComponentAdapter.instance.global_metadata
+
+		if (comp_data.is_empty()):
+			return
+		var file := FileAccess.open("res://comp_data.json", FileAccess.WRITE)
+		file.store_string(JSON.stringify(comp_data))
+		print("Saved!")
+
+		
 func _process(delta: float):
 	if Engine.is_editor_hint():
+		self.check_for_save()
+
 		return
 	self.time += delta
 	var truncated: int = floori(self.time)
