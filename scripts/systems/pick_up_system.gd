@@ -9,6 +9,7 @@ func _ready() -> void:
 	self.collectables_query.with_and_register(Components.Collectable.get_type_name())
 	self.collectables_query.with_and_register(Components.PhysicsBody.get_type_name())
 	self.collectables_query.with_and_register(Components.MeshComponent.get_type_name())
+
 	self.collectors_query.with_and_register(Components.Collector.get_type_name())
 	self.collectors_query.with_and_register(Components.PhysicsBody.get_type_name())
 	self.collectors_query.with_and_register(Components.Inventory.get_type_name())

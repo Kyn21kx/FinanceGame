@@ -38,25 +38,26 @@ func _ready() -> void:
 	
 	# Spawn the player at start with its default components
 	var controller_comp_p1 := Components.Controller.new()
-	controller_comp_p1.forward_key = KEY_W
-	controller_comp_p1.backward_key = KEY_S
-	controller_comp_p1.left_key = KEY_A
-	controller_comp_p1.right_key = KEY_D
-	controller_comp_p1.jump_key = KEY_SPACE
-	controller_comp_p1.dash_key = KEY_SHIFT
-	controller_comp_p1.hit_key = KEY_F
+
+	controller_comp_p1.forward_key = "move_up_p1"
+	controller_comp_p1.backward_key = "move_down_p1"
+	controller_comp_p1.left_key = "move_left_p1"
+	controller_comp_p1.right_key = "move_right_p1"
+	controller_comp_p1.jump_key = "jump_p1"
+	controller_comp_p1.dash_key = "dash_p1"
+	controller_comp_p1.hit_key = "hit_p1"
 	controller_comp_p1.throw_action = "throw_p1"
 	self._make_player(controller_comp_p1)
 
 	# Second player for testing
 	var controller_comp_p2 := Components.Controller.new()
-	controller_comp_p2.forward_key = KEY_UP
-	controller_comp_p2.backward_key = KEY_DOWN
-	controller_comp_p2.left_key = KEY_LEFT
-	controller_comp_p2.right_key = KEY_RIGHT
-	controller_comp_p2.jump_key = KEY_ALT
-	controller_comp_p2.dash_key = KEY_CTRL
-	controller_comp_p2.hit_key = KEY_M
+	controller_comp_p2.forward_key = "move_up_p2"
+	controller_comp_p2.backward_key = "move_down_p2"
+	controller_comp_p2.left_key = "move_left_p2"
+	controller_comp_p2.right_key = "move_right_p2"
+	controller_comp_p2.jump_key = "jump_p2"
+	controller_comp_p2.dash_key = "dash_p2"
+	controller_comp_p2.hit_key = "hit_p2"
 	controller_comp_p2.throw_action = "throw_p2"
 	self._make_player(controller_comp_p2)
 	
@@ -143,10 +144,9 @@ func _make_player(controller_comp: Components.Controller) -> void:
 	var inventory_comp := Components.Inventory.new()
 	FlecsScene.entity_add_component_instance(player, Components.Inventory.get_type_name(), inventory_comp)
 	
-	var thrower_comp := Components.Thrower.new()
-	thrower_comp.throw_force = 30
-	FlecsScene.entity_add_component_instance(player, Components.Thrower.get_type_name(), thrower_comp)
-	
+	var throwable_comp := Components.Throwable.new(10)
+	FlecsScene.entity_add_component_instance(player, Components.Throwable.get_type_name(), throwable_comp)
+
 	var camera_target := Components.CameraTarget.new(2)
 	FlecsScene.entity_add_component_instance(player, Components.CameraTarget.get_type_name(), camera_target)
 
