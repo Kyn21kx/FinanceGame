@@ -300,6 +300,8 @@ class Thrower:
 	static func get_type_name() -> StringName:
 		return "Thrower"
 
+# It might be worth refactoring the coin-related scripts to use these components,
+# since they share similar behavior.
 class MagneticAttracter:
 	var strength: float
 	var threshold: float
@@ -311,6 +313,37 @@ class MagneticAttracter:
 class MagneticTarget:
 	static func get_type_name() -> StringName:
 		return "MagneticTarget"
+
+
+class Camera:
+	var camera : RID
+	var camera_ref : Camera3D
+	var pivot : Vector3
+	var zoom_direction : Vector3
+	var zoom_in_speed : float
+	var zoom_out_seed : float
+	var max_zoom_in : float
+	var max_zoom_out : float
+	var target_padding : float
+	var do_look_at_primary_objective : bool = false
+	
+	func _init(camera : Camera3D) -> void:
+		self.camera = camera.get_camera_rid()
+		self.camera_ref = camera
+
+	static func get_type_name() -> StringName:
+		return "Camera"
+
+
+class CameraTarget:
+	var priority : int
+	
+	func _init(priority : int) -> void:
+		self.priority = priority
+	
+	static func get_type_name() -> StringName:
+		return "CameraTarget"
+
 
 class Area:
 	var id: RID
