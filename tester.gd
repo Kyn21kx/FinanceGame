@@ -24,15 +24,25 @@ func load_scene():
 	FlecsScene.load_scene("res://world.json")
 	pass
 
-func copy_ecs_data():
 
+func get_viewport_consistent() -> Viewport:
+	if Engine.is_editor_hint():
+		return EditorInterface.get_editor_viewport_3d()
+	return self.get_viewport()
+
+
+func get_world3d_consistent() -> World3D:
+	return self.get_viewport_consistent().find_world_3d()
+
+func copy_ecs_data():
 	var registered_components := [
 		Components.Dash,
 		Components.Movement,
 		Components.Controller,
 		Components.Player,
 		Components.Throwable,
-		Components.Thrower
+		Components.Thrower,
+		Components.PhysicsBody
 	]
 	# TODO: make into a map
 	var registered_components_name := [
@@ -41,26 +51,47 @@ func copy_ecs_data():
 		Components.Controller.get_type_name(),
 		Components.Player.get_type_name(),
 		Components.Throwable.get_type_name(),
-		Components.Thrower.get_type_name()
+		Components.Thrower.get_type_name(),
+		Components.PhysicsBody.get_type_name()
 	]
 	# Walk through the global node data (just a file), get the 
 	var file := FileAccess.open("res://comp_data.json", FileAccess.READ)
 	var json : String = file.get_as_text()
 	var comp_data: Dictionary = JSON.parse_string(json)
 
-	for comp_dict: Dictionary in comp_data.values():
+	for node_path: String in comp_data.keys():
 		var entity : RID = FlecsScene.create_raw_entity()
+		var node_instance : Node = get_node(NodePath(node_path))
+		assert(node_instance != null, "Node path not found, forgot to save?")
+		var is_mesh_instance : bool = node_instance is MeshInstance3D
+		if is_mesh_instance:
+			# Add a mesh component
+			var mesh_instance := node_instance as MeshInstance3D
+			var mesh_comp := Components.MeshComponent.new(mesh_instance.mesh, self.get_world3d_consistent())
+			FlecsScene.entity_add_component_instance(entity, Components.MeshComponent.get_type_name(), mesh_comp)
+		var comp_dict : Dictionary = comp_data[node_path]
 		for comp_key in comp_dict:
 			# Find index??
 			var index = registered_components_name.find(comp_key)
-			var instance = registered_components[index].new()
+
+			var instance = null
+			var is_physics_body_and_targetting_mesh : bool = registered_components_name[index] == Components.PhysicsBody.get_type_name() and is_mesh_instance
+			if is_physics_body_and_targetting_mesh:
+				# Get shape of the MeshInstance
+				var mesh_instance := node_instance as MeshInstance3D
+				var shape : Shape3D = mesh_instance.mesh.create_convex_shape()
+				instance = Components.PhysicsBody.new(shape, self.get_world3d_consistent())
+			else:
+				instance = registered_components[index].new()
+			
 			var fields : Dictionary = comp_dict[comp_key]
 		
 			for field_key in fields:
 				instance.set(field_key, fields[field_key])
 
 			FlecsScene.entity_add_component_instance(entity, instance.get_type_name(), instance)
-	
+		# TODO: Delete note
+		node_instance.queue_free()
 
 func generate_mesh() -> void:
 	var world : World3D = null
@@ -90,7 +121,8 @@ func _ready() -> void:
 func check_for_save():
 	if (Input.is_key_pressed(KEY_CTRL) and Input.is_key_pressed(KEY_S)):
 		print("Saving")
-		var comp_data: Dictionary[Node, Dictionary] = NodeComponentAdapter.instance.global_metadata
+		var comp_data: Dictionary = NodeComponentAdapter.instance.global_metadata
+
 
 		if (comp_data.is_empty()):
 			return
@@ -98,6 +130,9 @@ func check_for_save():
 		file.store_string(JSON.stringify(comp_data))
 		print("Saved!")
 
+func on_response(status: int, body: PackedByteArray):
+	print("Status: ", status, "; body: ", body.get_string_from_utf8())
+	pass
 		
 func _process(delta: float):
 	if Engine.is_editor_hint():
@@ -107,6 +142,8 @@ func _process(delta: float):
 	self.time += delta
 	var truncated: int = floori(self.time)
 	if truncated % 10 == 0 && truncated != 0 && truncated != self.last_spawn:
-		self.generate_mesh()
+		# var client := CurlHttpClient.create_curl_client(100)
+		# client.init_client(1)
+		# client.send_get("https://httpbin.org/get", on_response, {})
 		self.last_spawn = truncated
 	pass

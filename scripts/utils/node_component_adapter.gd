@@ -2,13 +2,15 @@
 extends EditorInspectorPlugin
 class_name NodeComponentAdapter
 
+
 var registered_components := [
 	Components.Dash,
 	Components.Movement,
 	Components.Controller,
 	Components.Player,
 	Components.Throwable,
-	Components.Thrower
+	Components.Thrower,
+	Components.PhysicsBody
 ]
 # TODO: make into a map
 var registered_components_name := [
@@ -17,7 +19,8 @@ var registered_components_name := [
 	Components.Controller.get_type_name(),
 	Components.Player.get_type_name(),
 	Components.Throwable.get_type_name(),
-	Components.Thrower.get_type_name()
+	Components.Thrower.get_type_name(),
+	Components.PhysicsBody.get_type_name()
 ]
 
 
@@ -28,7 +31,8 @@ var current_container: Control = null
 var component_header_scene = preload("res://addons/component_creator/ui_components/component_header.tscn")
 var current_header: ComponentEditor = null
 var current_dropdown: OptionButton = null
-var global_metadata: Dictionary[Node, Dictionary] = {}
+var global_metadata: Dictionary = {}
+
 
 func _can_handle(object: Object) -> bool:
 	return object is MeshInstance3D
@@ -56,7 +60,9 @@ func populate_dropdown(dropdown: OptionButton):
 
 
 func render_component_properties(sample_instance):
-	var comp_data: Dictionary = self.global_metadata.get_or_add(self.current_object, {})
+	var root := (self.current_object as Node).get_tree().edited_scene_root
+	var path : NodePath = root.get_path_to(self.current_object as Node)
+	var comp_data: Dictionary = self.global_metadata.get_or_add(str(path), {})
 
 	var fields : Dictionary = comp_data.get_or_add(sample_instance.get_type_name(), {})
 	if (fields.is_empty()):
@@ -91,11 +97,15 @@ func render_property(comp_instance, prop_name: String, type: int, is_read_only: 
 	# Create appropriate input control based on type
 	var input_control: Control
 	
-	var current_editable_node := self.current_object
+	var current_editable_node := self.current_object as Node
 	var on_change_update := func(p_val):
-		var comp_data : Dictionary = self.global_metadata.get(current_editable_node)
+		var root := current_editable_node.get_tree().edited_scene_root
+		var relative_path : NodePath = root.get_path_to(current_editable_node)
+		var comp_data : Dictionary = self.global_metadata.get(str(relative_path))
 		var fields : Dictionary = comp_data[comp_instance.get_type_name()]
+		print("Trying to set ", prop_name, " with ", p_val, " on ", comp_instance)
 		fields[prop_name] = p_val
+		comp_instance.set(prop_name, p_val)
 		
 	match type:
 		TYPE_BOOL:
@@ -123,11 +133,29 @@ func render_property(comp_instance, prop_name: String, type: int, is_read_only: 
 	
 	return hbox
 
+
+func get_viewport_consistent() -> Viewport:
+	if Engine.is_editor_hint():
+		return EditorInterface.get_editor_viewport_3d()
+	return self.current_object.get_viewport()
+
+
+func get_world3d_consistent() -> World3D:
+	return self.get_viewport_consistent().find_world_3d()
+
 func on_component_selected(item: int):
 	if item < 1 || item > self.registered_components.size():
 		# Print a warning or something
 		return
-	var comp_instance = self.registered_components[item - 1].new()
+	var comp_instance = null
+	var is_physics_body_and_targetting_mesh : bool = self.registered_components_name[item - 1] == Components.PhysicsBody.get_type_name() and self.current_object is MeshInstance3D
+	if is_physics_body_and_targetting_mesh:
+		# Get shape of the MeshInstance
+		var mesh_instance := self.current_object as MeshInstance3D
+		var shape : Shape3D = mesh_instance.mesh.create_convex_shape()
+		comp_instance = Components.PhysicsBody.new(shape, self.get_world3d_consistent())
+	else:
+		comp_instance = self.registered_components[item - 1].new()
 	self.current_header = self.component_header_scene.instantiate() as ComponentEditor
 	self.current_header.set_comp_name(comp_instance.get_type_name())
 
@@ -145,19 +173,29 @@ func fetch_component_data() -> void:
 			print("Trying to instantiate ", comp_key)
 			# Find index??
 			var index = self.registered_components_name.find(comp_key)
-			var instance = self.registered_components[index].new()
-			print("Instance at runtime? ", instance)
+			
+			var is_physics_body_and_targetting_mesh : bool = self.registered_components_name[index] == Components.PhysicsBody.get_type_name() and self.current_object is MeshInstance3D
+			var comp_instance = null
+			if is_physics_body_and_targetting_mesh:
+				# Get shape of the MeshInstance
+				var mesh_instance := self.current_object as MeshInstance3D
+				var shape : Shape3D = mesh_instance.mesh.create_convex_shape()
+				comp_instance = Components.PhysicsBody.new(shape, self.get_world3d_consistent())
+			else:
+				comp_instance = self.registered_components[index].new()
+			
+			print("Instance at runtime? ", comp_instance)
 			var fields : Dictionary = comp_dict[comp_key]
 			print(fields)
 			
 			self.current_header = self.component_header_scene.instantiate() as ComponentEditor
-			self.current_header.set_comp_name(instance.get_type_name())
+			self.current_header.set_comp_name(comp_instance.get_type_name())
 
 			safe_add_child_to(self.current_container, self.current_header)
 			
 			for field_key in fields:
-				instance.set(field_key, fields[field_key])
-			render_component_properties(instance)
+				comp_instance.set(field_key, fields[field_key])
+			render_component_properties(comp_instance)
 
 
 func option_dropdown() -> Control:
@@ -172,14 +210,21 @@ func option_dropdown() -> Control:
 
 func _init() -> void:
 	instance = self
+	# Load the data from the file
+	var file := FileAccess.open("res://comp_data.json", FileAccess.READ)
+	if (file == null):
+		return
+	var json : String = file.get_as_text()
+	self.global_metadata = JSON.parse_string(json) as Dictionary
 
 func _parse_begin(_object: Object) -> void:
 	self.current_object = _object
 	if (self.current_object == null):
 		print("Current object is null!")
 		return
-	var comp_data: Dictionary = self.global_metadata.get_or_add(self.current_object, {})
-	print("Comp data: ", comp_data)
+	var root : Node = (self.current_object as Node).get_tree().edited_scene_root
+	var path := root.get_path_to(self.current_object as Node)
+	self.global_metadata.get_or_add(str(path), {})
 	var label := Label.new()
 	label.text = "This object will be saved in the ECS simulation!"
 	label.label_settings = LabelSettings.new()
@@ -191,4 +236,3 @@ func _parse_begin(_object: Object) -> void:
 	self.current_dropdown = self.option_dropdown()
 	self.current_container.add_child(self.current_dropdown)
 	self.add_custom_control(self.current_container)
-

@@ -28,6 +28,49 @@ class PhysicsBody:
 	# Maybe we need to keep a ref
 	var shape_ref: Shape3D
 
+	var axis_lock_linear_x : bool:
+		get:
+			return self.is_axis_locked(PhysicsServer3D.BODY_AXIS_LINEAR_X)
+		set(value):
+			if value:
+				self.lock_axis(PhysicsServer3D.BODY_AXIS_LINEAR_X)
+
+	var axis_lock_linear_y : bool:
+		get:
+			return self.is_axis_locked(PhysicsServer3D.BODY_AXIS_LINEAR_Y)
+		set(value):
+			if value:
+				self.lock_axis(PhysicsServer3D.BODY_AXIS_LINEAR_Y)
+
+	var axis_lock_linear_z : bool:
+		get:
+			return self.is_axis_locked(PhysicsServer3D.BODY_AXIS_LINEAR_Z)
+		set(value):
+			if value:
+				self.lock_axis(PhysicsServer3D.BODY_AXIS_LINEAR_Z)
+
+	var axis_lock_angular_x : bool:
+		get:
+			return self.is_axis_locked(PhysicsServer3D.BODY_AXIS_ANGULAR_X)
+		set(value):
+			if value:
+				self.lock_axis(PhysicsServer3D.BODY_AXIS_ANGULAR_X)
+
+	var axis_lock_angular_y : bool:
+		get:
+			return self.is_axis_locked(PhysicsServer3D.BODY_AXIS_ANGULAR_Y)
+		set(value):
+			if value:
+				self.lock_axis(PhysicsServer3D.BODY_AXIS_ANGULAR_Y)
+
+	var axis_lock_angular_z : bool:
+		get:
+			return self.is_axis_locked(PhysicsServer3D.BODY_AXIS_ANGULAR_Z)
+		set(value):
+			if value:
+				self.lock_axis(PhysicsServer3D.BODY_AXIS_ANGULAR_Z)
+			
+
 	func _init(p_shape: Shape3D, p_world: World3D, transform: Transform3D = Transform3D.IDENTITY) -> void:
 		self.shape = p_shape.get_rid()
 		self.shape_ref = p_shape
@@ -69,6 +112,9 @@ class PhysicsBody:
 
 	func lock_axis(axis: int) -> void:
 		PhysicsServer3D.body_set_axis_lock(self.body_id, axis, true)
+
+	func is_axis_locked(axis: int) -> bool:
+		return PhysicsServer3D.body_is_axis_locked(self.body_id, axis)
 	
 	func set_collision_layer(layer: int) -> void:
 		return PhysicsServer3D.body_set_collision_layer(self.body_id, layer)

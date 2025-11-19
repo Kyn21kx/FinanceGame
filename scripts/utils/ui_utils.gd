@@ -6,8 +6,9 @@ class_name UIUtils
 # on_change.call(new_value) will be invoked with the full Variant value.
 
 static func _create_bool_input(value: bool, on_change: Callable, _is_read_only: bool = false) -> CheckBox:
-	var checkbox = CheckBox.new()
-	checkbox.pressed = value
+	var checkbox := CheckBox.new()
+	checkbox.toggle_mode = true
+	checkbox.button_pressed = value
 	checkbox.disabled = _is_read_only
 	checkbox.toggled.connect(func(pressed: bool):
 		on_change.call(pressed)
