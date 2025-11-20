@@ -30,9 +30,7 @@ static func create_axis_line_mesh(length: float = 1.0, axis: Vector3 = Vector3.R
 	var points := PackedVector3Array([Vector3.ZERO, axis * length])
 	return create_line_mesh(points)
 
-static func create_model_entity(prefab: PackedScene, scenario: World3D) -> RID:
-	var instance : Node = prefab.instantiate()
-
+static func create_model_entity(instance: Node, scenario: World3D) -> RID:
 	var parent_entity : RID = FlecsScene.create_raw_entity_with_name(instance.name)
 	if (instance is MeshInstance3D):
 		var mesh_comp := Components.MeshComponent.new(instance.mesh, scenario)
@@ -54,7 +52,6 @@ static func create_model_entity(prefab: PackedScene, scenario: World3D) -> RID:
 		FlecsScene.entity_add_child(parent_entity, child_entity)
 		create_model_entity_from_node(child_mesh, scenario, child_entity)
 
-	instance.queue_free()
 	return parent_entity
 
 

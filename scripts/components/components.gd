@@ -69,12 +69,15 @@ class PhysicsBody:
 		set(value):
 			if value:
 				self.lock_axis(PhysicsServer3D.BODY_AXIS_ANGULAR_Z)
-			
 
-	func _init(p_shape: Shape3D, p_world: World3D, transform: Transform3D = Transform3D.IDENTITY) -> void:
+
+	func _init(p_shape: Shape3D = self.shape_ref, transform: Transform3D = Transform3D.IDENTITY) -> void:
 		self.shape = p_shape.get_rid()
 		self.shape_ref = p_shape
 		self.body_id = PhysicsServer3D.body_create()
+		# Bad fix, but will suffice for now
+		var p_world : World3D = EditorImporterSystem.instance.get_world3d_consistent()
+		print("World: ", p_world)
 		PhysicsServer3D.body_set_space(self.body_id, p_world.space)
 		PhysicsServer3D.body_add_shape(self.body_id, self.shape)
 		PhysicsServer3D.body_set_shape_transform(self.body_id, 0, Transform3D.IDENTITY)

@@ -3,7 +3,8 @@ extends EditorInspectorPlugin
 class_name NodeComponentAdapter
 
 
-var registered_components := [
+# TODO: make into a map
+static var registered_components := [
 	Components.Dash,
 	Components.Movement,
 	Components.Controller,
@@ -13,7 +14,7 @@ var registered_components := [
 	Components.PhysicsBody
 ]
 # TODO: make into a map
-var registered_components_name := [
+static var registered_components_name := [
 	Components.Dash.get_type_name(),
 	Components.Movement.get_type_name(),
 	Components.Controller.get_type_name(),
@@ -35,20 +36,20 @@ var global_metadata: Dictionary = {}
 
 
 func _can_handle(object: Object) -> bool:
-	return object is MeshInstance3D
+	return object is MeshInstance3D or object is ECSImportedNode
 
-func safe_add_child_to(parent: Node, instance: Node):
+func safe_add_child_to(parent: Node, p_instance: Node):
 	if (parent == null):
-		print("Null parent for child: ", instance.name)
+		print("Null parent for child: ", p_instance.name)
 		return
-	if (instance == null):
+	if (p_instance == null):
 		print("Null child for parent: ", parent.name)
 		return
 
-	if (instance.get_parent() != null):
-		instance.reparent(parent)
+	if (p_instance.get_parent() != null):
+		p_instance.reparent(parent)
 		return
-	parent.add_child(instance)
+	parent.add_child(p_instance)
 
 func populate_dropdown(dropdown: OptionButton):
 	dropdown.clear()
@@ -75,7 +76,6 @@ func render_component_properties(sample_instance):
 		var static_props: Dictionary = sample_instance.get_readonly_props()
 		var read_only : bool = prop.type == TYPE_RID || static_props.get(prop.name)
 		fields[prop.name] = sample_instance.get(prop.name)
-		print("From within loop... field: ", prop.name, "; value: ", fields[prop.name])
 		var control_node : Control = render_property(sample_instance, prop.name, prop.type, read_only)
 		safe_add_child_to(self.current_header, control_node)
 
@@ -103,7 +103,6 @@ func render_property(comp_instance, prop_name: String, type: int, is_read_only: 
 		var relative_path : NodePath = root.get_path_to(current_editable_node)
 		var comp_data : Dictionary = self.global_metadata.get(str(relative_path))
 		var fields : Dictionary = comp_data[comp_instance.get_type_name()]
-		print("Trying to set ", prop_name, " with ", p_val, " on ", comp_instance)
 		fields[prop_name] = p_val
 		comp_instance.set(prop_name, p_val)
 		
@@ -144,18 +143,18 @@ func get_world3d_consistent() -> World3D:
 	return self.get_viewport_consistent().find_world_3d()
 
 func on_component_selected(item: int):
-	if item < 1 || item > self.registered_components.size():
+	if item < 1 || item > registered_components.size():
 		# Print a warning or something
 		return
 	var comp_instance = null
-	var is_physics_body_and_targetting_mesh : bool = self.registered_components_name[item - 1] == Components.PhysicsBody.get_type_name() and self.current_object is MeshInstance3D
+	var is_physics_body_and_targetting_mesh : bool = registered_components_name[item - 1] == Components.PhysicsBody.get_type_name() and self.current_object is MeshInstance3D
 	if is_physics_body_and_targetting_mesh:
 		# Get shape of the MeshInstance
 		var mesh_instance := self.current_object as MeshInstance3D
 		var shape : Shape3D = mesh_instance.mesh.create_convex_shape()
-		comp_instance = Components.PhysicsBody.new(shape, self.get_world3d_consistent())
+		comp_instance = Components.PhysicsBody.new(shape)
 	else:
-		comp_instance = self.registered_components[item - 1].new()
+		comp_instance = registered_components[item - 1].new()
 	self.current_header = self.component_header_scene.instantiate() as ComponentEditor
 	self.current_header.set_comp_name(comp_instance.get_type_name())
 
@@ -168,25 +167,27 @@ func fetch_component_data() -> void:
 	var comp_data : Dictionary = self.global_metadata
 	if (comp_data.is_empty()):
 		return
-	for comp_dict: Dictionary in comp_data.values():
+	for node_path: String in comp_data.keys():
+		var current_node : Node = (self.current_object as Node)
+		var comp_node : Node = current_node.get_tree().edited_scene_root.get_node(NodePath(node_path))
+		if current_node != comp_node:
+			continue
+		var comp_dict: Dictionary = comp_data[node_path]
 		for comp_key in comp_dict:
-			print("Trying to instantiate ", comp_key)
 			# Find index??
-			var index = self.registered_components_name.find(comp_key)
+			var index = registered_components_name.find(comp_key)
 			
-			var is_physics_body_and_targetting_mesh : bool = self.registered_components_name[index] == Components.PhysicsBody.get_type_name() and self.current_object is MeshInstance3D
+			var is_physics_body_and_targetting_mesh : bool = registered_components_name[index] == Components.PhysicsBody.get_type_name() and self.current_object is MeshInstance3D
 			var comp_instance = null
 			if is_physics_body_and_targetting_mesh:
 				# Get shape of the MeshInstance
 				var mesh_instance := self.current_object as MeshInstance3D
 				var shape : Shape3D = mesh_instance.mesh.create_convex_shape()
-				comp_instance = Components.PhysicsBody.new(shape, self.get_world3d_consistent())
+				comp_instance = Components.PhysicsBody.new(shape)
 			else:
-				comp_instance = self.registered_components[index].new()
+				comp_instance = registered_components[index].new()
 			
-			print("Instance at runtime? ", comp_instance)
 			var fields : Dictionary = comp_dict[comp_key]
-			print(fields)
 			
 			self.current_header = self.component_header_scene.instantiate() as ComponentEditor
 			self.current_header.set_comp_name(comp_instance.get_type_name())

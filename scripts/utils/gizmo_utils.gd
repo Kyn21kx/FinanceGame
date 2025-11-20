@@ -252,7 +252,7 @@ static func create_axis_entity(scenario: World3D, length: float, axis: Vector3, 
 
 	var shape := mesh.create_convex_shape()
 	
-	var body_comp := Components.PhysicsBody.new(shape, scenario, transform)
+	var body_comp := Components.PhysicsBody.new(shape, transform)
 	body_comp.set_body_type(PhysicsServer3D.BODY_MODE_STATIC)
 	body_comp.set_collision_layer(Components.PhysicsMasks.GizmoLayer)
 	body_comp.set_collision_mask(Components.PhysicsMasks.GizmoLayer)
@@ -273,7 +273,7 @@ static func create_circle_entity(scenario: World3D, radius: float, segments: int
 	
 	var shape := mesh.create_convex_shape()
 	
-	var body_comp := Components.PhysicsBody.new(shape, scenario, transform)
+	var body_comp := Components.PhysicsBody.new(shape, transform)
 	body_comp.set_body_type(PhysicsServer3D.BODY_MODE_STATIC)
 	body_comp.set_collision_layer(Components.PhysicsMasks.GizmoLayer)
 	body_comp.set_collision_mask(Components.PhysicsMasks.GizmoLayer)
@@ -298,7 +298,7 @@ static func create_handle_entity(scenario: World3D, radius: float, material: Mat
 	mesh.surface_set_material(0, material)
 	var mesh_comp := Components.MeshComponent.new(mesh, scenario)
 	var shape_physics := mesh.create_convex_shape()
-	var body_comp := Components.PhysicsBody.new(shape_physics, scenario, transform)
+	var body_comp := Components.PhysicsBody.new(shape_physics, transform)
 	body_comp.set_body_type(PhysicsServer3D.BODY_MODE_STATIC)
 	body_comp.set_collision_mask(Components.PhysicsMasks.GizmoLayer)
 	body_comp.set_collision_layer(Components.PhysicsMasks.GizmoLayer)
@@ -319,7 +319,7 @@ static func create_arrow_entity(scenario: World3D, material: Material, transform
 	
 	var shape := mesh.create_convex_shape()
 	
-	var body_comp := Components.PhysicsBody.new(shape, scenario, transform)
+	var body_comp := Components.PhysicsBody.new(shape, transform)
 	body_comp.set_body_type(PhysicsServer3D.BODY_MODE_STATIC)
 	body_comp.set_collision_layer(Components.PhysicsMasks.GizmoLayer)
 	body_comp.set_collision_mask(Components.PhysicsMasks.GizmoLayer)

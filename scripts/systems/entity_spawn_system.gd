@@ -80,7 +80,7 @@ func _make_ball() -> void:
 	var ball : RID = FlecsScene.create_raw_entity_with_name("Ball")
 	var mesh_comp := Components.MeshComponent.new(ball_mesh, self.get_viewport().world_3d)
 	var xform := Transform3D(Basis(), Vector3(0, 5, -3))
-	var body := Components.PhysicsBody.new(ball_shape, self.get_viewport().world_3d, xform)
+	var body := Components.PhysicsBody.new(ball_shape, xform)
 	var attracter := Components.MagneticAttracter.new()
 	attracter.strength = 30
 	attracter.threshold = 30
@@ -98,7 +98,7 @@ func _make_env_object(mesh: Mesh, weight: float) -> void:
 	var obj : RID = FlecsScene.create_raw_entity_with_name("Obstacle")
 	var throwable := Components.Throwable.new(weight)
 	FlecsScene.entity_add_component_instance(obj, Components.Throwable.get_type_name(), throwable)
-	var body := Components.PhysicsBody.new(self.box_shape, self.get_viewport().world_3d)
+	var body := Components.PhysicsBody.new(self.box_shape)
 	var mesh_comp := Components.MeshComponent.new(mesh, self.get_viewport().world_3d)
 	FlecsScene.entity_add_component_instance(obj, Components.PhysicsBody.get_type_name(), body) 
 	FlecsScene.entity_add_component_instance(obj, Components.MeshComponent.get_type_name(), mesh_comp) 
@@ -115,7 +115,7 @@ func _make_player(controller_comp: Components.Controller) -> void:
 	var mesh_comp := Components.MeshComponent.new(self.player_model, self.get_viewport().world_3d)
 	FlecsScene.entity_add_component_instance(player, Components.MeshComponent.get_type_name(), mesh_comp)
 	
-	var physics_comp := Components.PhysicsBody.new(self.player_shape, self.get_viewport().world_3d)
+	var physics_comp := Components.PhysicsBody.new(self.player_shape)
 	physics_comp.lock_axis(PhysicsServer3D.BODY_AXIS_ANGULAR_X | PhysicsServer3D.BODY_AXIS_ANGULAR_Y | PhysicsServer3D.BODY_AXIS_ANGULAR_Z)
 	FlecsScene.entity_add_component_instance(player, Components.PhysicsBody.get_type_name(), physics_comp)
 	
@@ -153,7 +153,7 @@ func _make_coin(position: Vector3) -> void:
 	var mesh_comp := Components.MeshComponent.new(self.coin_model, self.get_viewport().world_3d)
 	FlecsScene.entity_add_component_instance(coin, Components.MeshComponent.get_type_name(), mesh_comp)
 	
-	var physics_comp := Components.PhysicsBody.new(self.coin_shape, self.get_viewport().world_3d)
+	var physics_comp := Components.PhysicsBody.new(self.coin_shape)
 	physics_comp.set_collision_layer(0)
 	physics_comp.set_collision_mask(2)
 	var transform : Transform3D = physics_comp.get_transform()
