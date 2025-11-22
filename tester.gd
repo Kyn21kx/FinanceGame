@@ -121,8 +121,8 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 	# self._serialize_components()
-	self.copy_ecs_data()
-	self.generate_mesh()
+	# self.copy_ecs_data()
+	# self.generate_mesh()
 	pass
 
 func check_for_save():

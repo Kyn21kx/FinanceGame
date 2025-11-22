@@ -1,6 +1,7 @@
-[gd_scene load_steps=17 format=3 uid="uid://17diqbcutb3p"]
+[gd_scene load_steps=18 format=3 uid="uid://17diqbcutb3p"]
 
 [ext_resource type="Script" uid="uid://b2271ootsknqm" path="res://scripts/systems/movement_system.gd" id="1_dc2kq"]
+[ext_resource type="Script" uid="uid://7sut20oko3d3" path="res://tester.gd" id="1_ulcth"]
 [ext_resource type="Script" uid="uid://bwqpb3d10qxyp" path="res://scripts/systems/entity_spawn_system.gd" id="1_ypt0w"]
 [ext_resource type="Material" uid="uid://dfywvxmc6ljyy" path="res://materials/test_player.tres" id="2_6mnxl"]
 [ext_resource type="Script" uid="uid://c3cx1tdqnfacf" path="res://scripts/systems/scene_systems.gd" id="2_iyuba"]
@@ -34,6 +35,7 @@ background_mode = 2
 sky = SubResource("Sky_ypt0w")
 
 [node name="Node3D" type="Node3D"]
+script = ExtResource("1_ulcth")
 
 [node name="EntityManagementSystem" type="EntityManagementSystem" parent="."]
 

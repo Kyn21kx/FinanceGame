@@ -116,6 +116,7 @@ func _make_player(controller_comp: Components.Controller) -> void:
 	FlecsScene.entity_add_component_instance(player, Components.MeshComponent.get_type_name(), mesh_comp)
 	
 	var physics_comp := Components.PhysicsBody.new(self.player_shape)
+	physics_comp.set_body_type(PhysicsServer3D.BODY_MODE_RIGID_LINEAR)
 	physics_comp.lock_axis(PhysicsServer3D.BODY_AXIS_ANGULAR_X | PhysicsServer3D.BODY_AXIS_ANGULAR_Y | PhysicsServer3D.BODY_AXIS_ANGULAR_Z)
 	FlecsScene.entity_add_component_instance(player, Components.PhysicsBody.get_type_name(), physics_comp)
 	

@@ -113,6 +113,7 @@ func rope_joint_system(_entity: RID, components: Array):
 	var first_body_xform := rope_joint.body_a.get_transform()
 	var second_body_xform := rope_joint.body_b.get_transform()
 	var distance_sqr : float = (second_body_xform.origin - first_body_xform.origin).length_squared()
+	DebugDraw3D.draw_line(rope_joint.body_a.get_transform().origin, rope_joint.body_b.get_transform().origin, Color.PURPLE)
 
 	if distance_sqr >= rope_joint.length * rope_joint.length:
 		# Apply tension force
@@ -121,14 +122,14 @@ func rope_joint_system(_entity: RID, components: Array):
 		var tension_force = direction * (excess_distance * rope_joint.strength)
 
 		rope_joint.body_b.apply_force(-tension_force)
-		rope_joint.body_a.apply_force(tension_force)
+		# rope_joint.body_a.apply_force(tension_force)
 
 		
 		var relative_velocity := rope_joint.body_b.get_velocity() - rope_joint.body_a.get_velocity()
 		var damping_force = -relative_velocity * rope_joint.damping * rope_joint.body_b.get_mass()
 
 		rope_joint.body_b.apply_force(damping_force)
-		rope_joint.body_a.apply_force(-damping_force)
+		# rope_joint.body_a.apply_force(-damping_force)
 
 
 
@@ -142,11 +143,26 @@ func render_physic_meshes(_entity: RID, components: Array):
 	pass
 
 
-func render_non_physic_meshes(_entity: RID, components: Array):
+func render_non_physic_meshes(entity: RID, components: Array):
 	# Xform, Mesh
 	var xform : Transform3D = components[0]
 	var mesh: Components.MeshComponent = components[1]
 	
+	# Check if we have a parent, and if we do, transform our current xform by it
+	var parent : RID = FlecsScene.entity_get_parent(entity)
+
+	var world_matrix := Transform3D.IDENTITY
+	if (parent.is_valid()):
+		# TODO: Maybe make this a system?
+		var parent_physics : Components.PhysicsBody = FlecsScene.get_component_from_entity(parent, Components.PhysicsBody.get_type_name())
+		if (parent_physics == null):
+			world_matrix = FlecsScene.get_component_from_entity(parent, "Transform3D")
+		else:
+			world_matrix = parent_physics.get_transform()
+
+	# I meaaaan, if we only need the world xform, we can just set this here and render that
+	xform = world_matrix * xform
+
 	RenderingServer.instance_set_transform(mesh.instance, xform)
 
 func gizmo_determine_direction() -> Vector3:

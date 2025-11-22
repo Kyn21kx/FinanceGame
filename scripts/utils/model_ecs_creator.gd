@@ -32,9 +32,10 @@ static func create_axis_line_mesh(length: float = 1.0, axis: Vector3 = Vector3.R
 
 static func create_model_entity(instance: Node, scenario: World3D) -> RID:
 	var parent_entity : RID = FlecsScene.create_raw_entity_with_name(instance.name)
+	var xform := Transform3D.IDENTITY if instance is not Node3D else (instance as Node3D).transform
+	FlecsScene.entity_add_component_instance(parent_entity, "Transform3D", xform)
 	if (instance is MeshInstance3D):
 		var mesh_comp := Components.MeshComponent.new(instance.mesh, scenario)
-		FlecsScene.entity_add_component_instance(parent_entity, "Transform3D", instance.transform)
 		FlecsScene.entity_add_component_instance(parent_entity, Components.MeshComponent.get_type_name(), mesh_comp)
 
 	# Go through the hierarchy and find mesh instances
