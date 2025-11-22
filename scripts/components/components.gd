@@ -77,7 +77,6 @@ class PhysicsBody:
 		self.body_id = PhysicsServer3D.body_create()
 		# Bad fix, but will suffice for now
 		var p_world : World3D = EditorImporterSystem.instance.get_world3d_consistent()
-		print("World: ", p_world)
 		PhysicsServer3D.body_set_space(self.body_id, p_world.space)
 		PhysicsServer3D.body_add_shape(self.body_id, self.shape)
 		PhysicsServer3D.body_set_shape_transform(self.body_id, 0, Transform3D.IDENTITY)
