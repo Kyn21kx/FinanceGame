@@ -40,7 +40,8 @@ func _process(_delta: float):
 
 func calculate_aim(controller: Components.Controller, player_pos: Vector3, throwable_pos: Vector3) -> Vector3:
 	# Get the movement axis and apply that as the throwing direction if we want to throw
-	var direction := controller.get_axis_left()
+	var direction := controller.get_axis_right()
+	DebugDraw3D.draw_arrow(player_pos, player_pos + Vector3(direction.x, 0, direction.y), Color.BLUE)
 
 	# Awful by reference trick
 	var result_wrapper : Array = [Vector3(direction.x, 0, direction.y)] # Z and X
@@ -53,18 +54,12 @@ func calculate_aim(controller: Components.Controller, player_pos: Vector3, throw
 		const auto_aim_threshold_sqr := 90
 		var diff : Vector3 = bag_pos - player_pos
 		var direction_similarity : float = result_wrapper[0].dot(diff)
-		print("direction similarity: ", direction_similarity)
 		if (diff.length_squared() > auto_aim_threshold_sqr || direction_similarity  < 0.8):
 			return
 		result_wrapper[0] = (bag_pos - throwable_pos).normalized()
 	)
 
 	return result_wrapper[0]
-
-func _throw_object(throwable_info: Components.Throwable, player_xform: Transform3D, throwable_xform: Transform3D, controller: Components.Controller, thrower_info: Components.Thrower):
-	thrower_info.throwing_direction = self.calculate_aim(controller, player_xform.origin, throwable_xform.origin) # Handles auto aim when close to the bag
-	throwable_info.state = Components.ThrowableState.Thrown
-	
 
 func _throwing_system_input(player: RID, components: Array):
 	var controller : Components.Controller = components[1]
@@ -88,16 +83,14 @@ func _throwing_system_input(player: RID, components: Array):
 		var thrower_is_current_player : bool = throwable_info.thrower_id == player 
 		var throwable_is_held : bool = throwable_info.state == Components.ThrowableState.Dragging
 
-		if (!is_throw_button_pressed and throwable_is_held and thrower_is_current_player):
-			self._throw_object(throwable_info, player_xform, throwable_xform, controller, thrower_info)
-
-		if (distance_sqr > THROWABLE_DETECTION_RADIUS_SQR):
-			return
-
-		if(is_throw_button_pressed and throwable_info.state == Components.ThrowableState.Released):
+		if (is_throw_button_pressed and throwable_info.state == Components.ThrowableState.Released and distance_sqr <= THROWABLE_DETECTION_RADIUS_SQR):
 			# Transition to dragging
 			throwable_info.state = Components.ThrowableState.Dragging
 			throwable_info.thrower_id = player
+
+		if (!is_throw_button_pressed and throwable_is_held and thrower_is_current_player and thrower_is_current_player):
+			thrower_info.throwing_direction = self.calculate_aim(controller, player_xform.origin, throwable_xform.origin)
+			throwable_info.state = Components.ThrowableState.Thrown
 	)
 	
 

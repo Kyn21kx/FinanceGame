@@ -47,6 +47,10 @@ func _ready() -> void:
 	controller_comp_p1.dash_key = "dash_p1"
 	controller_comp_p1.hit_key = "hit_p1"
 	controller_comp_p1.throw_action = "throw_p1"
+	controller_comp_p1.rs_up = "rs_up_p1"
+	controller_comp_p1.rs_down = "rs_down_p1"
+	controller_comp_p1.rs_left = "rs_left_p1"
+	controller_comp_p1.rs_right = "rs_right_p1"
 	self._make_player(controller_comp_p1)
 
 	# Second player for testing
@@ -59,6 +63,10 @@ func _ready() -> void:
 	controller_comp_p2.dash_key = "dash_p2"
 	controller_comp_p2.hit_key = "hit_p2"
 	controller_comp_p2.throw_action = "throw_p2"
+	controller_comp_p2.rs_up = "rs_up_p2"
+	controller_comp_p2.rs_down = "rs_down_p2"
+	controller_comp_p2.rs_left = "rs_left_p2"
+	controller_comp_p2.rs_right = "rs_right_p2"
 	self._make_player(controller_comp_p2)
 	
 	self._make_coin(Vector3(2, 0, 1))

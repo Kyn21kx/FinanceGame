@@ -269,6 +269,11 @@ class Controller:
 	var right_key: StringName
 	var left_key: StringName
 
+	var rs_up: StringName
+	var rs_down: StringName
+	var rs_left: StringName
+	var rs_right: StringName
+
 	var horizontal_axis: StringName
 	var vertical_axis: StringName
 
@@ -281,6 +286,11 @@ class Controller:
 	func get_axis_left() -> Vector2:
 		var horizontal: float = Input.get_axis(self.left_key, self.right_key)
 		var vertical: float = Input.get_axis(self.backward_key, self.forward_key)
+		return Vector2(horizontal, -vertical)
+
+	func get_axis_right() -> Vector2:
+		var horizontal: float = Input.get_axis(self.rs_left, self.rs_right)
+		var vertical: float = Input.get_axis(self.rs_down, self.rs_up)
 		return Vector2(horizontal, -vertical)
 
 	static func get_readonly_props() -> Dictionary:
