@@ -137,8 +137,12 @@ func render_physic_meshes(_entity: RID, components: Array):
 	# Body, Mesh
 	var body : Components.PhysicsBody = components[0]
 	var mesh : Components.MeshComponent = components[1]
-	var xform : Transform3D = body.get_transform()
+	var direct_state := PhysicsServer3D.body_get_direct_state(body.body_id)
+	var xform : Transform3D = direct_state.transform
 
+	# Update the component's transform for all other systems
+	body.transform = xform
+	# Then render
 	RenderingServer.instance_set_transform(mesh.instance, xform)
 	pass
 

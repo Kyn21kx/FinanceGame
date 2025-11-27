@@ -1,8 +1,11 @@
 class_name Components
 
-const movement_state_names = ["Idle", "Airbone", "Jumped", "Dashing"]
+const movement_state_names = ["Empty", "Idle", "Airbone", "Jumped", "Dashing", "Falling"]
 
-enum MovState { Idle, Airbone, Jumped, Dashing }
+# Note: Empty is NOT Idle, it's a state where there is nothing to determine the actor's movement
+# It's more like "Waiting" for the next physics frame so its actual state gets calculated, but
+# it's useful to distinguish it from the idle movement state where we could be grounded
+enum MovState { Empty, Idle, Airbone, Jumped, Dashing, Falling }
 
 enum Item { Coin, Ingot }
 
@@ -25,8 +28,9 @@ const THROWABLE_MAX_WEIGHT := 20
 class PhysicsBody:
 	var body_id: RID
 	var shape: RID
-	# Maybe we need to keep a ref
+	# We need to keep a ref to the shape
 	var shape_ref: Shape3D
+	var transform: Transform3D = Transform3D.IDENTITY
 
 	var axis_lock_linear_x : bool:
 		get:
@@ -85,7 +89,7 @@ class PhysicsBody:
 		self.set_transform(transform)
 	
 	func get_transform() -> Transform3D:
-		return PhysicsServer3D.body_get_state(self.body_id, PhysicsServer3D.BODY_STATE_TRANSFORM) as Transform3D
+		return self.transform
 
 	func set_transform(xform: Transform3D) -> void:
 		PhysicsServer3D.body_set_state(self.body_id, PhysicsServer3D.BODY_STATE_TRANSFORM, xform)
@@ -223,10 +227,12 @@ class MeshComponent:
 		return "MeshComponent"
 
 class Movement:
+	const JUMP_BUFFER_TIME_MSEC = 50
 	var direction: Vector3
 	var speed: float
 	var speed_mod_factor: float = 1
 	var jump_force: float
+	var last_jump_input_time: float = INF
 
 	var state: MovState = MovState.Idle
 	

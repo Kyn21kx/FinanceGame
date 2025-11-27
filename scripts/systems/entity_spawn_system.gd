@@ -18,9 +18,6 @@ var player_layer: int
 var coin_model: Mesh
 
 @export
-var coin_shape: Shape3D
-
-@export
 var sample_pos: Vector3
 
 var box_mesh := BoxMesh.new()
@@ -67,17 +64,18 @@ func _ready() -> void:
 	controller_comp_p2.rs_down = "rs_down_p2"
 	controller_comp_p2.rs_left = "rs_left_p2"
 	controller_comp_p2.rs_right = "rs_right_p2"
-	self._make_player(controller_comp_p2)
+	# self._make_player(controller_comp_p2)
 	
-	self._make_coin(Vector3(2, 0, 1))
-	self._make_coin(Vector3(3, 0, 1))
-	self._make_coin(Vector3(4, 0, 1))
-	self._make_coin(Vector3(1.5, 0, 1.5))
-	self._make_coin(Vector3(3.5, 0, 1.5))
-	self._make_coin(Vector3(-2, 0, -2))
-	self._make_coin(Vector3(-2, 0, -2.5))
-	self._make_coin(Vector3(-2.5, 0, -3))
-	self._make_coin(Vector3(-1, 0, -3.5))
+	var coin_shape : Shape3D = self.coin_model.create_convex_shape()
+	self._make_coin(Vector3(2, 0, 1), coin_shape)
+	self._make_coin(Vector3(3, 0, 1), coin_shape)
+	self._make_coin(Vector3(4, 0, 1), coin_shape)
+	self._make_coin(Vector3(1.5, 0, 1.5), coin_shape)
+	self._make_coin(Vector3(3.5, 0, 1.5), coin_shape)
+	self._make_coin(Vector3(-2, 0, -2), coin_shape)
+	self._make_coin(Vector3(-2, 0, -2.5), coin_shape)
+	self._make_coin(Vector3(-2.5, 0, -3), coin_shape)
+	self._make_coin(Vector3(-1, 0, -3.5), coin_shape)
 
 
 	self._make_env_object(self.box_mesh, 10)
@@ -130,7 +128,7 @@ func _make_player(controller_comp: Components.Controller) -> void:
 	
 	var movement_comp := Components.Movement.new()
 	movement_comp.speed = 20 
-	movement_comp.jump_force = 10
+	movement_comp.jump_force = 20
 	FlecsScene.entity_add_component_instance(player, Components.Movement.get_type_name(), movement_comp)
 	
 	FlecsScene.entity_add_component_instance(player, Components.Controller.get_type_name(), controller_comp)
@@ -157,12 +155,12 @@ func _make_player(controller_comp: Components.Controller) -> void:
 	FlecsScene.entity_add_component_instance(player, Components.Throwable.get_type_name(), throwable_comp)
 
 
-func _make_coin(position: Vector3) -> void:
+func _make_coin(position: Vector3, coin_shape: Shape3D) -> void:
 	var coin : RID = FlecsScene.create_raw_entity()
 	var mesh_comp := Components.MeshComponent.new(self.coin_model, self.get_viewport().world_3d)
 	FlecsScene.entity_add_component_instance(coin, Components.MeshComponent.get_type_name(), mesh_comp)
 	
-	var physics_comp := Components.PhysicsBody.new(self.coin_shape)
+	var physics_comp := Components.PhysicsBody.new(coin_shape)
 	physics_comp.set_collision_layer(0)
 	physics_comp.set_collision_mask(2)
 	var transform : Transform3D = physics_comp.get_transform()

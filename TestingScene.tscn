@@ -1,10 +1,11 @@
-[gd_scene load_steps=18 format=3 uid="uid://17diqbcutb3p"]
+[gd_scene load_steps=16 format=3 uid="uid://17diqbcutb3p"]
 
 [ext_resource type="Script" uid="uid://b2271ootsknqm" path="res://scripts/systems/movement_system.gd" id="1_dc2kq"]
 [ext_resource type="Script" uid="uid://7sut20oko3d3" path="res://tester.gd" id="1_ulcth"]
 [ext_resource type="Script" uid="uid://bwqpb3d10qxyp" path="res://scripts/systems/entity_spawn_system.gd" id="1_ypt0w"]
 [ext_resource type="Material" uid="uid://dfywvxmc6ljyy" path="res://materials/test_player.tres" id="2_6mnxl"]
 [ext_resource type="Script" uid="uid://c3cx1tdqnfacf" path="res://scripts/systems/scene_systems.gd" id="2_iyuba"]
+[ext_resource type="ArrayMesh" uid="uid://c5mbu8vg7th5t" path="res://models/placeholders/env/Coin.tres" id="4_b7scd"]
 [ext_resource type="Script" uid="uid://cl4srd40jb55t" path="res://scripts/systems/pick_up_system.gd" id="5_5gf4p"]
 [ext_resource type="Material" uid="uid://crkr2yoi6vwmh" path="res://materials/floor_test.tres" id="6_5o5w8"]
 [ext_resource type="Material" uid="uid://c7fj3iv3ggbrm" path="res://materials/WallMaterial.tres" id="6_7hjm2"]
@@ -14,16 +15,6 @@
 material = ExtResource("2_6mnxl")
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_5gf4p"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5gf4p"]
-albedo_color = Color(1, 0.843137, 0, 1)
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_7hjm2"]
-material = SubResource("StandardMaterial3D_5gf4p")
-height = 0.2
-
-[sub_resource type="CylinderShape3D" id="CylinderShape3D_5o5w8"]
-height = 0.2
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6mnxl"]
 
@@ -44,8 +35,7 @@ script = ExtResource("1_ypt0w")
 player_model = SubResource("CylinderMesh_ypt0w")
 player_shape = SubResource("CylinderShape3D_5gf4p")
 player_layer = 2
-coin_model = SubResource("CylinderMesh_7hjm2")
-coin_shape = SubResource("CylinderShape3D_5o5w8")
+coin_model = ExtResource("4_b7scd")
 
 [node name="SceneSystems" type="Node" parent="."]
 script = ExtResource("2_iyuba")

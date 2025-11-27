@@ -30,26 +30,38 @@ func _handle_movement_state(delta: float, movement: Components.Movement, body: C
 
 	if (movement.state == Components.MovState.Jumped):
 		body.apply_impulse(Vector3.UP * movement.jump_force)
+		# Immediately apply airbone state
+		movement.state = Components.MovState.Airbone
 		
 
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(1, 0.5, 1) # Just a small rectangle thingy
 	var space_state := self.get_viewport().world_3d.direct_space_state
-	var origin : Vector3 = body.get_transform().origin
-	var query := PhysicsRayQueryParameters3D.create(origin, origin - (Vector3.UP))
-	var ray_result : Dictionary = space_state.intersect_ray(query)
-	var vel_y_comp : float = absf(body.get_velocity().y)
+	var origin : Vector3 = body.get_transform().origin + Vector3.DOWN - (Vector3.RIGHT * (shape.size.x / 2) - (Vector3.FORWARD * (shape.size.z / 2)))
+	var query_xform := Transform3D(Basis(), origin)
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.transform = query_xform
+	query.shape = shape
+	query.exclude = [body.shape]
+	var all_res : Array[Dictionary] = space_state.intersect_shape(query, 1)
+	var shape_color : Color = Color.GREEN
+	var raw_y_velocity : float = body.get_velocity().y
+	var vel_y_comp : float = absf(raw_y_velocity)
 	const threshold : float = 0.5
 
-	if (ray_result.is_empty()):
+	if (all_res.is_empty() or all_res[0].is_empty() or all_res[0].collider_id == 0):
 		if (vel_y_comp > threshold):
 			movement.state = Components.MovState.Airbone
+			shape_color = Color.RED
 			body.set_gravity_scale(5)
+		if (raw_y_velocity < 0):
+			movement.state = Components.MovState.Falling
 
 	elif vel_y_comp == 0 and movement.state != Components.MovState.Idle: # Additional cond to avoid repeating the gravity scale setter
 		movement.state = Components.MovState.Idle
 		body.set_gravity_scale(1)
 
-
-
+	DebugDraw3D.draw_box(origin, Quaternion.IDENTITY, shape.size, shape_color)
 	# TODO: Move to independent function when needed
 	body.apply_force(movement.direction * movement.speed * movement.speed_mod_factor)
 	pass
@@ -59,13 +71,13 @@ func _handle_dash(delta: float,  movement: Components.Movement, body: Components
 	var curr_vel : Vector3 = body.get_velocity()
 	if (dash_info.curr_dashing_time >= dash_info.get_end_time()):
 		# If the dash feels too "slippery" uncomment these
-		curr_vel.x = 0
-		curr_vel.z = 0
-		body.set_velocity(curr_vel)
+		# curr_vel.x = 0
+		# curr_vel.z = 0
+		# body.set_velocity(curr_vel)
 
 		# Reset dash info
 		dash_info.curr_dashing_time = 0
-		movement.state = Components.MovState.Idle
+		movement.state = Components.MovState.Empty
 		return
 	movement.state = Components.MovState.Dashing
 
@@ -91,8 +103,16 @@ func _handle_input(_entity: RID, components: Array):
 	input += xform.basis.x * horizontal
 	input += xform.basis.z * -vertical
 
-	if (Input.is_action_pressed(controller.jump_key) && movement.state != Components.MovState.Airbone):
-		movement.state = Components.MovState.Jumped
+	var curr_time := Time.get_ticks_msec()
+	var buffer_time_diff := absf(curr_time - movement.last_jump_input_time)
+
+	if (Input.is_action_pressed(controller.jump_key) or buffer_time_diff <= movement.JUMP_BUFFER_TIME_MSEC):
+		if (movement.state == Components.MovState.Idle):
+			movement.state = Components.MovState.Jumped
+		# Buffer the input only if we're falling
+		if (movement.state == Components.MovState.Falling):
+			movement.last_jump_input_time = Time.get_ticks_msec()
+
 
 	input = input.normalized()
 
