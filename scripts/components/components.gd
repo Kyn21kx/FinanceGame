@@ -423,30 +423,15 @@ class MagneticTarget:
 	static func get_type_name() -> StringName:
 		return "MagneticTarget"
 
-class Area:
-	var id: RID
+class HeartResistance:
+	const INITIAL_BPM : float = 80
+	const CRITICAL_BPM_HIGH : float = 190
+	const CRITICAL_BPM_LOW : float = 45
+	const LETHAL_BPM_HIGH : float = 220
+	const LETHAL_BPM_LOW : float = 30
 
-	func _init(shape: Shape3D, xform: Transform3D, space: RID) -> void:
-		self.id = PhysicsServer3D.area_create()
-		self.set_transform(xform)
-		self.add_shape(shape)
-		PhysicsServer3D.area_set_ray_pickable(self.id, true)
-		PhysicsServer3D.area_set_monitorable(self.id, true)
-		PhysicsServer3D.area_set_space(self.id, space)
+	var bpm: float = INITIAL_BPM
 
-		print("area space:", PhysicsServer3D.area_get_space(self.id))
-		print("shape count:", PhysicsServer3D.area_get_shape_count(self.id))
-		print("Collision layer:", PhysicsServer3D.area_get_collision_layer(self.id))
-		print("Collision mask:", PhysicsServer3D.area_get_collision_mask(self.id))
-
-	func add_shape(shape: Shape3D, xform = Transform3D.IDENTITY):
-		PhysicsServer3D.area_add_shape(self.id, shape.get_rid(), xform) 
-	
-	func set_transform(xform: Transform3D):
-		PhysicsServer3D.area_set_transform(self.id, xform)
-
-	static func get_readonly_props() -> Dictionary:
-		return {}
-	
+class CameraTarget:
 	static func get_type_name() -> StringName:
-		return "Area"
+		return "CameraTarget"

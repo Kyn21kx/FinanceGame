@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://17diqbcutb3p"]
+[gd_scene load_steps=17 format=3 uid="uid://17diqbcutb3p"]
 
 [ext_resource type="Script" uid="uid://b2271ootsknqm" path="res://scripts/systems/movement_system.gd" id="1_dc2kq"]
 [ext_resource type="Script" uid="uid://7sut20oko3d3" path="res://tester.gd" id="1_ulcth"]
@@ -10,6 +10,7 @@
 [ext_resource type="Material" uid="uid://crkr2yoi6vwmh" path="res://materials/floor_test.tres" id="6_5o5w8"]
 [ext_resource type="Material" uid="uid://c7fj3iv3ggbrm" path="res://materials/WallMaterial.tres" id="6_7hjm2"]
 [ext_resource type="Script" uid="uid://dsn53ggkji2d0" path="res://scripts/systems/bag_system.gd" id="6_boodp"]
+[ext_resource type="Script" uid="uid://bf5pb7emmodrb" path="res://scripts/systems/camera_system.gd" id="9_35ann"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_ypt0w"]
 material = ExtResource("2_6mnxl")
@@ -56,7 +57,10 @@ metadata/_custom_type_script = "uid://dsn53ggkji2d0"
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.878525, 0.477695, 0, -0.477695, 0.878525, 0, 10.6069, 19.9432)
 environment = SubResource("Environment_5gf4p")
-fov = 45.0
+fov = 40.0
+script = ExtResource("9_35ann")
+fov_min = 30.0
+fov_max = 120.0
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.948379, 0.317139, 0, -0.317139, 0.948379, 0, 0, 0)

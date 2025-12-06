@@ -64,7 +64,7 @@ func _ready() -> void:
 	controller_comp_p2.rs_down = "rs_down_p2"
 	controller_comp_p2.rs_left = "rs_left_p2"
 	controller_comp_p2.rs_right = "rs_right_p2"
-	# self._make_player(controller_comp_p2)
+	self._make_player(controller_comp_p2)
 	
 	var coin_shape : Shape3D = self.coin_model.create_convex_shape()
 	self._make_coin(Vector3(2, 0, 1), coin_shape)
@@ -98,6 +98,7 @@ func _make_ball() -> void:
 	FlecsScene.entity_add_component_instance(ball, Components.MeshComponent.get_type_name(), mesh_comp)
 	FlecsScene.entity_add_component_instance(ball, Components.Bag.get_type_name(), bag_comp)
 	FlecsScene.entity_add_component_instance(ball, Components.MagneticAttracter.get_type_name(), attracter)
+	FlecsScene.entity_add_component_instance(ball, Components.CameraTarget.get_type_name(), Components.CameraTarget.new())
 
 # TODO: Allow them to make them from a typed resource
 func _make_env_object(mesh: Mesh, weight: float) -> void:
@@ -153,6 +154,8 @@ func _make_player(controller_comp: Components.Controller) -> void:
 
 	var throwable_comp := Components.Throwable.new(10)
 	FlecsScene.entity_add_component_instance(player, Components.Throwable.get_type_name(), throwable_comp)
+
+	FlecsScene.entity_add_component_instance(player, Components.CameraTarget.get_type_name(), Components.CameraTarget.new())
 
 
 func _make_coin(position: Vector3, coin_shape: Shape3D) -> void:
