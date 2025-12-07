@@ -48,7 +48,11 @@ func _ready() -> void:
 	controller_comp_p1.rs_down = "rs_down_p1"
 	controller_comp_p1.rs_left = "rs_left_p1"
 	controller_comp_p1.rs_right = "rs_right_p1"
-	self._make_player(controller_comp_p1)
+	var mesh_1 : Mesh = self.player_model.duplicate()
+	var mat_1 := StandardMaterial3D.new()
+	mat_1.albedo_color = Color.RED
+	mesh_1.surface_set_material(0, mat_1)
+	self._make_player(controller_comp_p1, mesh_1)
 
 	# Second player for testing
 	var controller_comp_p2 := Components.Controller.new()
@@ -64,7 +68,12 @@ func _ready() -> void:
 	controller_comp_p2.rs_down = "rs_down_p2"
 	controller_comp_p2.rs_left = "rs_left_p2"
 	controller_comp_p2.rs_right = "rs_right_p2"
-	self._make_player(controller_comp_p2)
+
+	var mesh_2 : Mesh = self.player_model.duplicate()
+	var mat_2 := StandardMaterial3D.new()
+	mat_2.albedo_color = Color.SKY_BLUE
+	mesh_2.surface_set_material(0, mat_2)
+	# self._make_player(controller_comp_p2, mesh_2)
 	
 	var coin_shape : Shape3D = self.coin_model.create_convex_shape()
 	self._make_coin(Vector3(2, 0, 1), coin_shape)
@@ -108,18 +117,19 @@ func _make_env_object(mesh: Mesh, weight: float) -> void:
 	var body := Components.PhysicsBody.new(self.box_shape)
 	var mesh_comp := Components.MeshComponent.new(mesh, self.get_viewport().world_3d)
 	FlecsScene.entity_add_component_instance(obj, Components.PhysicsBody.get_type_name(), body) 
+	print("Env id: ", body.body_id)
 	FlecsScene.entity_add_component_instance(obj, Components.MeshComponent.get_type_name(), mesh_comp) 
 	var attracted_comp := Components.MagneticTarget.new()
 	FlecsScene.entity_add_component_instance(obj, Components.MagneticTarget.get_type_name(), attracted_comp) 
 	pass
 
-func _make_player(controller_comp: Components.Controller) -> void:
+func _make_player(controller_comp: Components.Controller, mesh: Mesh) -> void:
 	var player : RID = FlecsScene.create_raw_entity_with_name("Player")
 
 	var player_comp := Components.Player.new()
 	FlecsScene.entity_add_component_instance(player, Components.Player.get_type_name(), player_comp)
 
-	var mesh_comp := Components.MeshComponent.new(self.player_model, self.get_viewport().world_3d)
+	var mesh_comp := Components.MeshComponent.new(mesh, self.get_viewport().world_3d)
 	FlecsScene.entity_add_component_instance(player, Components.MeshComponent.get_type_name(), mesh_comp)
 	
 	var physics_comp := Components.PhysicsBody.new(self.player_shape)

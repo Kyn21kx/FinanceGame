@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://17diqbcutb3p"]
+[gd_scene load_steps=19 format=3 uid="uid://17diqbcutb3p"]
 
 [ext_resource type="Script" uid="uid://b2271ootsknqm" path="res://scripts/systems/movement_system.gd" id="1_dc2kq"]
 [ext_resource type="Script" uid="uid://7sut20oko3d3" path="res://tester.gd" id="1_ulcth"]
@@ -11,6 +11,8 @@
 [ext_resource type="Material" uid="uid://c7fj3iv3ggbrm" path="res://materials/WallMaterial.tres" id="6_7hjm2"]
 [ext_resource type="Script" uid="uid://dsn53ggkji2d0" path="res://scripts/systems/bag_system.gd" id="6_boodp"]
 [ext_resource type="Script" uid="uid://bf5pb7emmodrb" path="res://scripts/systems/camera_system.gd" id="9_35ann"]
+[ext_resource type="Material" uid="uid://bnb8hwnjk70ut" path="res://materials/BouncyTest.tres" id="12_bdiev"]
+[ext_resource type="Script" uid="uid://bb68d6gx6so21" path="res://bouncer.gd" id="13_pnog0"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_ypt0w"]
 material = ExtResource("2_6mnxl")
@@ -97,8 +99,44 @@ material_override = ExtResource("6_7hjm2")
 use_collision = true
 
 [node name="CSGBox3D5" type="CSGBox3D" parent="Environment"]
-transform = Transform3D(34.2744, 0, 0, 1.91971e-14, -7.41245e-09, -27.1921, 9.53674e-07, 0.169577, -1.1886e-06, 0, 3.01346, 11.6922)
+transform = Transform3D(34.2744, 0, 0, 1.91971e-14, -4.40554e-07, -27.1921, 9.53674e-07, 10.0787, -1.1886e-06, -2.05783, 2.94801, 14.094)
+material_override = ExtResource("12_bdiev")
+transparency = 1.0
+use_collision = true
+collision_mask = 3
+
+[node name="CSGBox3D6" type="CSGBox3D" parent="Environment"]
+transform = Transform3D(38.3336, 0, 0, 1.06662e-06, 0.169577, 5.81868e-12, 4.92622e-20, 4.44089e-15, 35.6856, 2.26755, 14.608, -1.94082)
 material_override = ExtResource("6_7hjm2")
 transparency = 1.0
 use_collision = true
 collision_mask = 3
+
+[node name="Bouncy thing" type="CSGSphere3D" parent="Environment"]
+transform = Transform3D(0.815844, 0.0250645, 0, -0.141155, 0.144867, 0, 0, 0, 1.0438, -13.2921, 0.799236, 0)
+material_override = ExtResource("12_bdiev")
+use_collision = true
+collision_layer = 3
+collision_mask = 3
+radius = 4.0
+radial_segments = 20
+script = ExtResource("13_pnog0")
+
+[node name="LaunchPoint" type="CSGSphere3D" parent="Environment/Bouncy thing"]
+transform = Transform3D(0.5, -7.45058e-09, 0, 0, 0.5, 0, 0, 0, 0.5, -0.0299711, 3.10295, 0)
+calculate_tangents = false
+
+[node name="Bouncy thing2" type="CSGSphere3D" parent="Environment"]
+transform = Transform3D(0.7529, -0.0611685, 0, 0.344482, 0.13369, 0, 0, 0, 1.0438, 11.1404, 1.33182, 0)
+material_override = ExtResource("12_bdiev")
+use_collision = true
+collision_layer = 3
+collision_mask = 3
+radius = 4.0
+radial_segments = 20
+script = ExtResource("13_pnog0")
+
+[node name="LaunchPoint" type="CSGSphere3D" parent="Environment/Bouncy thing2"]
+transform = Transform3D(0.5, -7.45058e-09, 0, 0, 0.5, 0, 0, 0, 0.5, -0.0299711, 3.10295, 0)
+visible = false
+calculate_tangents = false

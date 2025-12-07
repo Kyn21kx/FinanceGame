@@ -53,8 +53,9 @@ func calculate_aim(controller: Components.Controller, player_pos: Vector3, throw
 		var bag_pos : Vector3 = bag_body.get_transform().origin
 		const auto_aim_threshold_sqr := 90
 		var diff : Vector3 = bag_pos - player_pos
+		diff.y = 0
 		var direction_similarity : float = result_wrapper[0].dot(diff)
-		if (diff.length_squared() > auto_aim_threshold_sqr || direction_similarity  < 0.8):
+		if (diff.length_squared() > auto_aim_threshold_sqr || direction_similarity  < 0.5):
 			return
 		result_wrapper[0] = (bag_pos - throwable_pos).normalized()
 	)
@@ -111,6 +112,9 @@ func handle_throwables_physics(throwable: RID, throwable_comps: Array):
 			self.release_object.call_deferred(throwable)
 			var force := thrower_info.throwing_direction * thrower_info.throw_force
 			throwable_body.set_gravity_scale(1)
+			throwable_body.axis_lock_angular_x = false
+			throwable_body.axis_lock_angular_y = false
+			throwable_body.axis_lock_angular_z = false
 			throwable_body.apply_impulse(force)
 
 			# Restore the movement factor
@@ -119,7 +123,6 @@ func handle_throwables_physics(throwable: RID, throwable_comps: Array):
 			throwable_info.state = Components.ThrowableState.Released
 		Components.ThrowableState.Released:
 			throwable_info.thrower_id = rid_from_int64(0)
-			pass
 
 	pass
 
@@ -133,6 +136,9 @@ func drag_object(throwable_id: RID, throwable_info: Components.Throwable, throwa
 	if joint_comp != null:
 		return
 	var thrower_body : Components.PhysicsBody = FlecsScene.get_component_from_entity(throwable_info.thrower_id, Components.PhysicsBody.get_type_name())
+	throwable_body.axis_lock_angular_x = true
+	throwable_body.axis_lock_angular_y = true
+	throwable_body.axis_lock_angular_z = true
 	throwable_body.set_gravity_scale(0)
 
 	var add_rope_comp := func _add_rope(p_joint):

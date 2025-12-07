@@ -20,12 +20,27 @@ func _ready() -> void:
 	self.bag_query.with_and_register(Components.Bag.get_type_name())
 	self.bag_query.with_and_register(Components.PhysicsBody.get_type_name())
 
+func _detect_env_actions(raycast_results: Array[Dictionary], body: Components.PhysicsBody, movement: Components.Movement) -> void:
+	# We can just use the first result
+	if movement.state != Components.MovState.Falling || raycast_results.is_empty() || raycast_results[0].is_empty() || !raycast_results[0].collider is Bouncer: return
+	# Move the body to the center of our bouncer
+	var bouncer : Bouncer = raycast_results[0].collider
+	var curr_xform := body.get_transform()
+	curr_xform.origin = bouncer.launch_node.global_position
+	var dir := (bouncer.launch_node.global_position - bouncer.global_position).normalized()
+	# body.set_transform(curr_xform)
+	body.apply_impulse(dir * 50)
+	movement.state = Components.MovState.Launched
 
 
 func _handle_movement_state(delta: float, movement: Components.Movement, body: Components.PhysicsBody, dash: Components.Dash):
 	if (movement.state == Components.MovState.Dashing):
 		dash.cooldown_time = dash.DASH_COOLDOWN
 		_handle_dash(delta, movement, body, dash)
+		return
+
+	if (movement.state == Components.MovState.Launched):
+		movement.state = Components.MovState.Empty
 		return
 
 	if (movement.state == Components.MovState.Jumped):
@@ -35,13 +50,14 @@ func _handle_movement_state(delta: float, movement: Components.Movement, body: C
 		
 
 	var shape := BoxShape3D.new()
-	shape.size = Vector3(1, 0.5, 1) # Just a small rectangle thingy
+	shape.size = Vector3(1, 0.8, 1) # Just a small rectangle thingy
 	var space_state := self.get_viewport().world_3d.direct_space_state
-	var origin : Vector3 = body.get_transform().origin + Vector3.DOWN - (Vector3.RIGHT * (shape.size.x / 2) - (Vector3.FORWARD * (shape.size.z / 2)))
+	var origin : Vector3 = body.get_transform().origin + (Vector3.DOWN * 1.5) - (Vector3.RIGHT * (shape.size.x / 2) - (Vector3.FORWARD * (shape.size.z / 2)))
 	var query_xform := Transform3D(Basis(), origin)
 	var query := PhysicsShapeQueryParameters3D.new()
 	query.transform = query_xform
 	query.shape = shape
+	query.collision_mask = Components.PhysicsMasks.JumpingLayer
 	query.exclude = [body.shape]
 	var all_res : Array[Dictionary] = space_state.intersect_shape(query, 1)
 	var shape_color : Color = Color.GREEN
@@ -61,6 +77,8 @@ func _handle_movement_state(delta: float, movement: Components.Movement, body: C
 		movement.state = Components.MovState.Idle
 		body.set_gravity_scale(1)
 
+	_detect_env_actions(all_res, body, movement)
+
 	DebugDraw3D.draw_box(origin, Quaternion.IDENTITY, shape.size, shape_color)
 	# TODO: Move to independent function when needed
 	body.apply_force(movement.direction * movement.speed * movement.speed_mod_factor)
@@ -70,10 +88,9 @@ func _handle_dash(delta: float,  movement: Components.Movement, body: Components
 	# Get the elapsed time
 	var curr_vel : Vector3 = body.get_velocity()
 	if (dash_info.curr_dashing_time >= dash_info.get_end_time()):
-		# If the dash feels too "slippery" uncomment these
-		# curr_vel.x = 0
-		# curr_vel.z = 0
-		# body.set_velocity(curr_vel)
+		curr_vel.x *= 0.5
+		curr_vel.z *= 0.5
+		body.set_velocity(curr_vel)
 
 		# Reset dash info
 		dash_info.curr_dashing_time = 0
@@ -136,7 +153,7 @@ func _handle_input(_entity: RID, components: Array):
 			DebugDraw3D.draw_arrow(bag_position, bag_position + direction_to_bag, Color.RED * input_dot_bag)
 
 			# if it's close to 1, magnetize
-			const threshold : float = 0.85
+			const threshold : float = 0.7
 			if input_dot_bag >= threshold:
 				dash.direction = direction_to_bag
 		)

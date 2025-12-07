@@ -1,18 +1,29 @@
 class_name Components
 
-const movement_state_names = ["Empty", "Idle", "Airbone", "Jumped", "Dashing", "Falling"]
+const movement_state_names = ["Empty", "Idle", "Airbone", "Jumped", "Dashing", "Falling", "Launched"]
 
 # Note: Empty is NOT Idle, it's a state where there is nothing to determine the actor's movement
 # It's more like "Waiting" for the next physics frame so its actual state gets calculated, but
 # it's useful to distinguish it from the idle movement state where we could be grounded
-enum MovState { Empty, Idle, Airbone, Jumped, Dashing, Falling }
+enum MovState { Empty, Idle, Airbone, Jumped, Dashing, Falling, Launched } # Launched could be applied to items, we'll review that, it's up to the designers
 
-enum Item { Coin, Ingot }
-
+enum Item {
+	Coin = 1,
+	Ingot = 3,
+	Monster = 2,
+	Tobacco = 2 << 1,
+	Dumbell = 2 << 2,
+	Coke = 2 << 3,
+	Vitamin = 2 << 4,
+	Fungi = 2 << 5,
+	IsPowerUp = Monster | Tobacco | Dumbell | Coke | Vitamin | Fungi
+}
+ 
 enum ThrowableState { Released, Dragging, Thrown }
 
 enum PhysicsMasks {
-	GizmoLayer = 1 << 31
+	GizmoLayer = 1 << 31,
+	JumpingLayer = 2 << 0,
 }
 
 enum JointType {
@@ -36,43 +47,37 @@ class PhysicsBody:
 		get:
 			return self.is_axis_locked(PhysicsServer3D.BODY_AXIS_LINEAR_X)
 		set(value):
-			if value:
-				self.lock_axis(PhysicsServer3D.BODY_AXIS_LINEAR_X)
+			self.lock_axis(PhysicsServer3D.BODY_AXIS_LINEAR_X, value)
 
 	var axis_lock_linear_y : bool:
 		get:
 			return self.is_axis_locked(PhysicsServer3D.BODY_AXIS_LINEAR_Y)
 		set(value):
-			if value:
-				self.lock_axis(PhysicsServer3D.BODY_AXIS_LINEAR_Y)
+			self.lock_axis(PhysicsServer3D.BODY_AXIS_LINEAR_Y, value)
 
 	var axis_lock_linear_z : bool:
 		get:
 			return self.is_axis_locked(PhysicsServer3D.BODY_AXIS_LINEAR_Z)
 		set(value):
-			if value:
-				self.lock_axis(PhysicsServer3D.BODY_AXIS_LINEAR_Z)
+			self.lock_axis(PhysicsServer3D.BODY_AXIS_LINEAR_Z, value)
 
 	var axis_lock_angular_x : bool:
 		get:
 			return self.is_axis_locked(PhysicsServer3D.BODY_AXIS_ANGULAR_X)
 		set(value):
-			if value:
-				self.lock_axis(PhysicsServer3D.BODY_AXIS_ANGULAR_X)
+			self.lock_axis(PhysicsServer3D.BODY_AXIS_ANGULAR_X, value)
 
 	var axis_lock_angular_y : bool:
 		get:
 			return self.is_axis_locked(PhysicsServer3D.BODY_AXIS_ANGULAR_Y)
 		set(value):
-			if value:
-				self.lock_axis(PhysicsServer3D.BODY_AXIS_ANGULAR_Y)
+			self.lock_axis(PhysicsServer3D.BODY_AXIS_ANGULAR_Y, value)
 
 	var axis_lock_angular_z : bool:
 		get:
 			return self.is_axis_locked(PhysicsServer3D.BODY_AXIS_ANGULAR_Z)
 		set(value):
-			if value:
-				self.lock_axis(PhysicsServer3D.BODY_AXIS_ANGULAR_Z)
+			self.lock_axis(PhysicsServer3D.BODY_AXIS_ANGULAR_Z, value)
 
 
 	func _init(p_shape: Shape3D = self.shape_ref, transform: Transform3D = Transform3D.IDENTITY) -> void:
@@ -116,8 +121,9 @@ class PhysicsBody:
 	func apply_impulse(impulse: Vector3) -> void:
 		PhysicsServer3D.body_apply_central_impulse(self.body_id, impulse)
 
-	func lock_axis(axis: int) -> void:
-		PhysicsServer3D.body_set_axis_lock(self.body_id, axis, true)
+	func lock_axis(axis: int, locked: bool = true) -> void:
+		PhysicsServer3D.body_set_axis_lock(self.body_id, axis, locked)
+
 
 	func is_axis_locked(axis: int) -> bool:
 		return PhysicsServer3D.body_is_axis_locked(self.body_id, axis)
@@ -233,6 +239,7 @@ class Movement:
 	var speed_mod_factor: float = 1
 	var jump_force: float
 	var last_jump_input_time: float = INF
+	var bounce_force: float = 1
 
 	var state: MovState = MovState.Idle
 	

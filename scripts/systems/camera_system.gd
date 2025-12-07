@@ -4,6 +4,7 @@ class_name CameraSystem extends Camera3D
 var query := Query.new()
 var all_targets_in_frustrum: bool = true
 var target_position_avg: Vector3
+var current_look_position: Vector3
 var target_count: int = 0
 @export
 var fov_min: float
@@ -31,12 +32,19 @@ func _process(delta: float) -> void:
 		pass
 	)
 	self.target_position_avg /= self.target_count
+	self.current_look_position = lerp(self.current_look_position, self.target_position_avg, delta * 3)
 	var euler : Vector3 = self.rotation_degrees
-	self.look_at(self.target_position_avg)
+	self.look_at(self.current_look_position)
 	self.rotation_degrees.z = euler.z
+	const error := 2
 	if (self.all_targets_in_frustrum):
+		# self.fov = lerpf(self.fov, self.fov_min, delta)
+		var diff : float = absf(self.fov - self.fov_min)
+		if (diff <= error): return
 		self.fov = lerpf(self.fov, self.fov_min, delta)
 		return
+	var diff : float = absf(self.fov - self.fov_max)
+	if (diff <= error): return
 	self.fov = lerpf(self.fov, self.fov_max, delta)
 	pass
 
