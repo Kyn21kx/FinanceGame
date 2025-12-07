@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://17diqbcutb3p"]
+[gd_scene load_steps=20 format=3 uid="uid://17diqbcutb3p"]
 
 [ext_resource type="Script" uid="uid://b2271ootsknqm" path="res://scripts/systems/movement_system.gd" id="1_dc2kq"]
 [ext_resource type="Script" uid="uid://7sut20oko3d3" path="res://tester.gd" id="1_ulcth"]
@@ -11,6 +11,7 @@
 [ext_resource type="Material" uid="uid://c7fj3iv3ggbrm" path="res://materials/WallMaterial.tres" id="6_7hjm2"]
 [ext_resource type="Script" uid="uid://dsn53ggkji2d0" path="res://scripts/systems/bag_system.gd" id="6_boodp"]
 [ext_resource type="Script" uid="uid://bf5pb7emmodrb" path="res://scripts/systems/camera_system.gd" id="9_35ann"]
+[ext_resource type="Script" uid="uid://fy1d7mnro0pu" path="res://scripts/systems/interaction_system.gd" id="9_tfe87"]
 [ext_resource type="Material" uid="uid://bnb8hwnjk70ut" path="res://materials/BouncyTest.tres" id="12_bdiev"]
 [ext_resource type="Script" uid="uid://bb68d6gx6so21" path="res://bouncer.gd" id="13_pnog0"]
 
@@ -55,6 +56,9 @@ script = ExtResource("6_boodp")
 object_drag_strength = 7.0
 object_drag_length = 2.0
 metadata/_custom_type_script = "uid://dsn53ggkji2d0"
+
+[node name="InteractionSystem" type="Node" parent="."]
+script = ExtResource("9_tfe87")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.878525, 0.477695, 0, -0.477695, 0.878525, 0, 10.6069, 19.9432)

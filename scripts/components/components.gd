@@ -20,7 +20,6 @@ enum Item {
 }
  
 enum ThrowableState { Released, Dragging, Thrown }
-
 enum PhysicsMasks {
 	GizmoLayer = 1 << 31,
 	JumpingLayer = 2 << 0,
@@ -33,6 +32,8 @@ enum JointType {
 	ConeTwist,
 	Generic6DOF
 }
+
+enum Interaction { None, Use }
 
 const THROWABLE_MAX_WEIGHT := 20
 
@@ -294,6 +295,7 @@ class Controller:
 	var dash_key: StringName
 	var hit_key: StringName
 	var throw_action: StringName
+	var use_action: StringName
 	
 	func get_axis_left() -> Vector2:
 		var horizontal: float = Input.get_axis(self.left_key, self.right_key)
@@ -442,3 +444,25 @@ class HeartResistance:
 class CameraTarget:
 	static func get_type_name() -> StringName:
 		return "CameraTarget"
+
+class Interactable:
+	var interaction_range : float = 5
+	
+	static func get_type_name() -> StringName:
+		return "Interactable"
+
+class Interactor:
+	static func get_type_name() -> StringName:
+		return "Interactor"
+
+class InteractionEvent:
+	var interactor : RID
+	var interactable : RID 
+	var interaction : Interaction
+	
+	static func get_type_name() -> StringName:
+		return "InteractionEvent"
+
+class Dispenser:
+	func get_type_name() -> StringName:
+		return "Dispenser"
