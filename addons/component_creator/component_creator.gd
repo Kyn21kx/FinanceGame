@@ -2,26 +2,14 @@
 extends EditorPlugin
 
 # A class member to hold the dock during the plugin life cycle.
-var dock
-var gizmo_plugin := NodelessGizmoPlugin.new()
 
+var plugin_instance : NodeComponentAdapter
 
 func _enter_tree():
-	# Initialization of the plugin goes here.
-	# Load the dock scene and instantiate it.
-	dock = preload("res://addons/component_creator/editor_system.tscn").instantiate()
-
-	# Add the loaded scene to the docks.
-	add_control_to_dock(DOCK_SLOT_LEFT_UL, dock)
-	# Note that LEFT_UL means the left of the editor, upper-left dock.
-	add_node_3d_gizmo_plugin(gizmo_plugin)
+	plugin_instance = NodeComponentAdapter.new()
+	print("Turning on component creator")
+	add_inspector_plugin(plugin_instance)
 
 
 func _exit_tree():
-	# Clean-up of the plugin goes here.
-	# Remove the dock.
-	remove_control_from_docks(dock)
-	# Erase the control from the memory.
-	dock.free()
-
-	remove_node_3d_gizmo_plugin(gizmo_plugin)
+	remove_inspector_plugin(plugin_instance)

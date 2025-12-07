@@ -20,37 +20,66 @@ func _ready() -> void:
 	self.bag_query.with_and_register(Components.Bag.get_type_name())
 	self.bag_query.with_and_register(Components.PhysicsBody.get_type_name())
 
-func _handle_movement_state(delta: float, movement: Components.Movement, body: Components.PhysicsBody, dash: Components.Dash):
+func _detect_env_actions(raycast_results: Array[Dictionary], body: Components.PhysicsBody, movement: Components.Movement) -> void:
+	# We can just use the first result
+	if movement.state != Components.MovState.Falling || raycast_results.is_empty() || raycast_results[0].is_empty() || !raycast_results[0].collider is Bouncer: return
+	# Move the body to the center of our bouncer
+	var bouncer : Bouncer = raycast_results[0].collider
+	var curr_xform := body.get_transform()
+	curr_xform.origin = bouncer.launch_node.global_position
+	var dir := (bouncer.launch_node.global_position - bouncer.global_position).normalized()
+	# body.set_transform(curr_xform)
+	body.apply_impulse(dir * 50)
+	movement.state = Components.MovState.Launched
 
+
+func _handle_movement_state(delta: float, movement: Components.Movement, body: Components.PhysicsBody, dash: Components.Dash):
 	if (movement.state == Components.MovState.Dashing):
 		dash.cooldown_time = dash.DASH_COOLDOWN
 		_handle_dash(delta, movement, body, dash)
 		return
-	# TODO: Check airbone dashing
+
+	if (movement.state == Components.MovState.Launched):
+		movement.state = Components.MovState.Empty
+		return
 
 	if (movement.state == Components.MovState.Jumped):
 		body.apply_impulse(Vector3.UP * movement.jump_force)
+		# Immediately apply airbone state
+		movement.state = Components.MovState.Airbone
 		
 
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(1, 0.8, 1) # Just a small rectangle thingy
 	var space_state := self.get_viewport().world_3d.direct_space_state
-	var origin : Vector3 = body.get_transform().origin
-	var query := PhysicsRayQueryParameters3D.create(origin, origin - (Vector3.UP))
-	var ray_result : Dictionary = space_state.intersect_ray(query)
-	var vel_y_comp : float = absf(body.get_velocity().y)
-	const threshold : float = 0.3
-	if (ray_result.is_empty()):
+	var origin : Vector3 = body.get_transform().origin + (Vector3.DOWN * 1.5) - (Vector3.RIGHT * (shape.size.x / 2) - (Vector3.FORWARD * (shape.size.z / 2)))
+	var query_xform := Transform3D(Basis(), origin)
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.transform = query_xform
+	query.shape = shape
+	query.collision_mask = Components.PhysicsMasks.JumpingLayer
+	query.exclude = [body.shape]
+	var all_res : Array[Dictionary] = space_state.intersect_shape(query, 1)
+	var shape_color : Color = Color.GREEN
+	var raw_y_velocity : float = body.get_velocity().y
+	var vel_y_comp : float = absf(raw_y_velocity)
+	const threshold : float = 0.5
+
+	if (all_res.is_empty() or all_res[0].is_empty() or all_res[0].collider_id == 0):
 		if (vel_y_comp > threshold):
 			movement.state = Components.MovState.Airbone
-	else:
-		movement.state = Components.MovState.Idle
+			shape_color = Color.RED
+			body.set_gravity_scale(5)
+		if (raw_y_velocity < 0):
+			movement.state = Components.MovState.Falling
 
-	if (movement.state == Components.MovState.Airbone):
-		# Increase the gravity of our body
-		body.set_gravity_scale(5)
-	else:
+	elif vel_y_comp == 0 and movement.state != Components.MovState.Idle: # Additional cond to avoid repeating the gravity scale setter
+		movement.state = Components.MovState.Idle
 		body.set_gravity_scale(1)
 
+	_detect_env_actions(all_res, body, movement)
 
+	DebugDraw3D.draw_box(origin, Quaternion.IDENTITY, shape.size, shape_color)
 	# TODO: Move to independent function when needed
 	body.apply_force(movement.direction * movement.speed * movement.speed_mod_factor)
 	pass
@@ -59,14 +88,13 @@ func _handle_dash(delta: float,  movement: Components.Movement, body: Components
 	# Get the elapsed time
 	var curr_vel : Vector3 = body.get_velocity()
 	if (dash_info.curr_dashing_time >= dash_info.get_end_time()):
-		# If the dash feels too "slippery" uncomment these
-		curr_vel.x = 0
-		curr_vel.z = 0
+		curr_vel.x *= 0.5
+		curr_vel.z *= 0.5
 		body.set_velocity(curr_vel)
 
 		# Reset dash info
 		dash_info.curr_dashing_time = 0
-		movement.state = Components.MovState.Idle
+		movement.state = Components.MovState.Empty
 		return
 	movement.state = Components.MovState.Dashing
 
@@ -85,18 +113,23 @@ func _handle_input(_entity: RID, components: Array):
 	var body : Components.PhysicsBody = components[3]
 	
 	var xform : Transform3D = body.get_transform()
+	var horizontal: float = Input.get_axis(controller.left_key, controller.right_key)
+	var vertical: float = Input.get_axis(controller.backward_key, controller.forward_key)
+	
 	var input := Vector3.ZERO
-	if (Input.is_key_pressed(controller.forward_key)):
-		input -= xform.basis.z
-	if (Input.is_key_pressed(controller.backward_key)):
-		input += xform.basis.z
-	if (Input.is_key_pressed(controller.left_key)):
-		input -= xform.basis.x
-	if (Input.is_key_pressed(controller.right_key)):
-		input += xform.basis.x
+	input += xform.basis.x * horizontal
+	input += xform.basis.z * -vertical
 
-	if (Input.is_key_pressed(controller.jump_key) && movement.state != Components.MovState.Airbone):
-		movement.state = Components.MovState.Jumped
+	var curr_time := Time.get_ticks_msec()
+	var buffer_time_diff := absf(curr_time - movement.last_jump_input_time)
+
+	if (Input.is_action_pressed(controller.jump_key) or buffer_time_diff <= movement.JUMP_BUFFER_TIME_MSEC):
+		if (movement.state == Components.MovState.Idle):
+			movement.state = Components.MovState.Jumped
+		# Buffer the input only if we're falling
+		if (movement.state == Components.MovState.Falling):
+			movement.last_jump_input_time = Time.get_ticks_msec()
+
 
 	input = input.normalized()
 
@@ -120,13 +153,13 @@ func _handle_input(_entity: RID, components: Array):
 			DebugDraw3D.draw_arrow(bag_position, bag_position + direction_to_bag, Color.RED * input_dot_bag)
 
 			# if it's close to 1, magnetize
-			const threshold : float = 0.85
+			const threshold : float = 0.7
 			if input_dot_bag >= threshold:
 				dash.direction = direction_to_bag
 		)
 
 
-	if (Input.is_key_pressed(controller.dash_key) && movement.state != Components.MovState.Dashing && dash.cooldown_time <= 0):
+	if (Input.is_action_pressed(controller.dash_key) && movement.state != Components.MovState.Dashing && dash.cooldown_time <= 0):
 		movement.state = Components.MovState.Dashing
 
 	movement.direction = input

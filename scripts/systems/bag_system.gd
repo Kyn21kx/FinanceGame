@@ -1,11 +1,13 @@
 extends Node
 class_name BagSystem # TODO: Rename to something like object interaction system
 
-const THROWABLE_DETECTION_RADIUS_SQR := 5 * 5
+const THROWABLE_DETECTION_RADIUS_SQR := 10 * 10
 
 var players_query := Query.new()
 var bags_query := Query.new()
 var throwables_query := Query.new()
+var magnetizers_query := Query.new()
+var magnetic_attracted_query := Query.new()
 
 @export
 var object_drag_strength: float
@@ -17,52 +19,83 @@ func _ready() -> void:
 	self.players_query.with_and_register(Components.Player.get_type_name())
 	self.players_query.with_and_register(Components.Controller.get_type_name())
 	self.players_query.with_and_register(Components.PhysicsBody.get_type_name())
+	self.players_query.with_and_register(Components.Thrower.get_type_name())
 
 	self.bags_query.with_and_register(Components.Bag.get_type_name())
 	self.bags_query.with_and_register(Components.PhysicsBody.get_type_name())
 
 	self.throwables_query.with_and_register(Components.Throwable.get_type_name())
 	self.throwables_query.with_and_register(Components.PhysicsBody.get_type_name())
+
+	self.magnetizers_query.with_and_register(Components.MagneticAttracter.get_type_name())
+	self.magnetizers_query.with_and_register(Components.PhysicsBody.get_type_name())
+
+	self.magnetic_attracted_query.with_and_register(Components.MagneticTarget.get_type_name())
+	self.magnetic_attracted_query.with_and_register(Components.PhysicsBody.get_type_name())
+
 	
 func _process(_delta: float):
 	self.players_query.each(_throwing_system_input)
 	pass
 
-func _throwing_system_input(_player: RID, components: Array):
+func calculate_aim(controller: Components.Controller, player_pos: Vector3, throwable_pos: Vector3) -> Vector3:
+	# Get the movement axis and apply that as the throwing direction if we want to throw
+	var direction := controller.get_axis_right()
+	DebugDraw3D.draw_arrow(player_pos, player_pos + Vector3(direction.x, 0, direction.y), Color.BLUE)
+
+	# Awful by reference trick
+	var result_wrapper : Array = [Vector3(direction.x, 0, direction.y)] # Z and X
+
+	# If the object is close to and the direction's normal is sufficently angled to
+	# the bag, we set the throwing direction in the direction of the bag so that it hits it
+	self.bags_query.each(func iter(_bag_entity: RID, components: Array):
+		var bag_body : Components.PhysicsBody = components[1]
+		var bag_pos : Vector3 = bag_body.get_transform().origin
+		const auto_aim_threshold_sqr := 90
+		var diff : Vector3 = bag_pos - player_pos
+		diff.y = 0
+		var direction_similarity : float = result_wrapper[0].dot(diff)
+		if (diff.length_squared() > auto_aim_threshold_sqr || direction_similarity  < 0.5):
+			return
+		result_wrapper[0] = (bag_pos - throwable_pos).normalized()
+	)
+
+	return result_wrapper[0]
+
+func _throwing_system_input(player: RID, components: Array):
 	var controller : Components.Controller = components[1]
 	var player_body : Components.PhysicsBody = components[2]
+	var thrower_info : Components.Thrower = components[3]
 	var player_xform = player_body.get_transform()
-	self.throwables_query.each(func _iter_throwables(_throwable: RID, throwable_comps: Array):
+	self.throwables_query.each(func _iter_throwables(throwable: RID, throwable_comps: Array):
+		if (throwable == player):
+			# Players are throwable, so, let's avoid hitting ourselves
+			return
 		# Do a distance check and if it is close enough trigger the 
 		var throwable_info : Components.Throwable = throwable_comps[0]
 		var throwable_body : Components.PhysicsBody = throwable_comps[1]
 		var throwable_xform := throwable_body.get_transform()
 	
 		var distance_sqr := throwable_xform.origin.distance_squared_to(player_xform.origin)
-		DebugDraw3D.draw_text((throwable_xform.origin + (Vector3.UP * 2)), "State: " + str(throwable_info.state), 48)
+		DebugDraw3D.draw_text((throwable_xform.origin + (Vector3.UP * 2.5)), "State: " + str(throwable_info.state), 48)
 		DebugDraw3D.draw_text((throwable_xform.origin + (Vector3.RIGHT * 2)), "Thrower: " + str(throwable_info.thrower_id), 48)
-		if (distance_sqr > THROWABLE_DETECTION_RADIUS_SQR):
-			return
 
-		if (!Input.is_action_pressed(controller.throw_action)):
-			if (throwable_info.thrower_id != _player): return
-			var thrower_info : Components.Thrower = FlecsScene.get_component_from_entity(_player, Components.Thrower.get_type_name())
-			if (throwable_info.state == Components.ThrowableState.Dragging):
-				# Get the movement axis and apply that as the throwing direction if we want to throw
-				var direction = controller.get_axis_left()
-				thrower_info.throwing_direction = Vector3(direction.x, 0, direction.y) # Z and X
-			
-				throwable_info.state = Components.ThrowableState.Thrown
-				return
+		var is_throw_button_pressed : bool = Input.is_action_pressed(controller.throw_action)
+		var thrower_is_current_player : bool = throwable_info.thrower_id == player 
+		var throwable_is_held : bool = throwable_info.state == Components.ThrowableState.Dragging
 
-		elif(throwable_info.state == Components.ThrowableState.Released):
+		if (is_throw_button_pressed and throwable_info.state == Components.ThrowableState.Released and distance_sqr <= THROWABLE_DETECTION_RADIUS_SQR):
 			# Transition to dragging
 			throwable_info.state = Components.ThrowableState.Dragging
-			throwable_info.thrower_id = _player
+			throwable_info.thrower_id = player
+
+		if (!is_throw_button_pressed and throwable_is_held and thrower_is_current_player and thrower_is_current_player):
+			thrower_info.throwing_direction = self.calculate_aim(controller, player_xform.origin, throwable_xform.origin)
+			throwable_info.state = Components.ThrowableState.Thrown
 	)
 	
 
-func handle_throwables_physics(_throwable: RID, throwable_comps: Array):
+func handle_throwables_physics(throwable: RID, throwable_comps: Array):
 	var throwable_info : Components.Throwable = throwable_comps[0]
 	var throwable_body : Components.PhysicsBody = throwable_comps[1]
 	# var throwable_xform := throwable_body.get_transform()
@@ -73,12 +106,15 @@ func handle_throwables_physics(_throwable: RID, throwable_comps: Array):
 	var thrower_info : Components.Thrower = FlecsScene.get_component_from_entity(throwable_info.thrower_id, Components.Thrower.get_type_name())
 	match throwable_info.state:
 		Components.ThrowableState.Dragging:
-			self.drag_object(throwable_info, throwable_body)
+			self.drag_object(throwable, throwable_info, throwable_body)
 		Components.ThrowableState.Thrown:
 			# Detach the joint
-			self.release_object(throwable_info.thrower_id)
+			self.release_object.call_deferred(throwable)
 			var force := thrower_info.throwing_direction * thrower_info.throw_force
 			throwable_body.set_gravity_scale(1)
+			throwable_body.axis_lock_angular_x = false
+			throwable_body.axis_lock_angular_y = false
+			throwable_body.axis_lock_angular_z = false
 			throwable_body.apply_impulse(force)
 
 			# Restore the movement factor
@@ -86,7 +122,7 @@ func handle_throwables_physics(_throwable: RID, throwable_comps: Array):
 			thrower_mov.speed_mod_factor = 1
 			throwable_info.state = Components.ThrowableState.Released
 		Components.ThrowableState.Released:
-			pass
+			throwable_info.thrower_id = rid_from_int64(0)
 
 	pass
 
@@ -94,23 +130,28 @@ func release_object(thrower_id: RID) -> void:
 	FlecsScene.entity_remove_component(thrower_id, Components.RopeJoint.get_type_name())
 
 
-func drag_object(throwable_info: Components.Throwable, throwable_body: Components.PhysicsBody):
-	# Add the joint component
-	var joint_comp : Components.RopeJoint = FlecsScene.get_component_from_entity(throwable_info.thrower_id, Components.RopeJoint.get_type_name())
-	var thrower_body : Components.PhysicsBody = FlecsScene.get_component_from_entity(throwable_info.thrower_id, Components.PhysicsBody.get_type_name())
+func drag_object(throwable_id: RID, throwable_info: Components.Throwable, throwable_body: Components.PhysicsBody):
+	# Add the joint component to the throwable (bc a single thrower can carry many throwables, so the joint is attached to the throwable)
+	var joint_comp : Components.RopeJoint = FlecsScene.get_component_from_entity(throwable_id, Components.RopeJoint.get_type_name())
 	if joint_comp != null:
-		# Force the y position to be above the ground
-		var xform : Transform3D = throwable_body.get_transform()
-		const offset := 1
-		xform.origin.y = thrower_body.get_transform().origin.y + offset
-		throwable_body.set_transform(xform)
-		apply_rotation_sync(joint_comp, throwable_body.get_transform(), xform)
 		return
+	var thrower_body : Components.PhysicsBody = FlecsScene.get_component_from_entity(throwable_info.thrower_id, Components.PhysicsBody.get_type_name())
+	throwable_body.axis_lock_angular_x = true
+	throwable_body.axis_lock_angular_y = true
+	throwable_body.axis_lock_angular_z = true
+	throwable_body.set_gravity_scale(0)
+
+	var add_rope_comp := func _add_rope(p_joint):
+		FlecsScene.entity_add_component_instance(throwable_id, Components.RopeJoint.get_type_name(), p_joint)
+
 	var joint := Components.RopeJoint.new(thrower_body, throwable_body)
 	joint.set_length(self.object_drag_length)
 	joint.set_strength(self.object_drag_strength)
-	FlecsScene.entity_add_component_instance(throwable_info.thrower_id, Components.RopeJoint.get_type_name(), joint)
+
+	add_rope_comp.call_deferred(joint)
+
 	
+
 
 func apply_rotation_sync(rope_joint: Components.RopeJoint, carrier_xform: Transform3D, carried_xform: Transform3D):
 	var to_object : Vector3 = carried_xform.origin - carrier_xform.origin
@@ -179,7 +220,7 @@ func _physics_process(_delta: float):
 			# This is laid out like this for debug purposes, move the if statement up so this does not evaluate all the time
 			DebugDraw3D.draw_text(player_xform.origin + (Vector3.RIGHT * 2), "Able to hit!", 56)
 			DebugDraw3D.draw_text(bag_xform.origin + (Vector3.LEFT * 3), "Last player hit: " + str(bag_info.last_player_id), 56)
-			if !Input.is_key_pressed(controller.hit_key) || bag_info.last_player_id == player_entity:
+			if !Input.is_action_pressed(controller.hit_key) || bag_info.last_player_id == player_entity:
 				return
 			bag_body.apply_impulse(Vector3.UP * 5)
 			bag_info.last_player_id = player_entity

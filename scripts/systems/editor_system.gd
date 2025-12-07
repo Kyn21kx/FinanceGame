@@ -71,7 +71,7 @@ func on_component_selected(item: int):
 	safe_add_child_to(self.vbox_container, label)
 	self.component_controls.append(label)
 	
-	render_component_properties(comp_instance, self.vbox_container)
+	# render_component_properties(comp_instance, self.vbox_container)
 	pass
 
 func option_dropdown():
@@ -105,56 +105,56 @@ func populate_dropdown():
 	
 	dropdown.select(0)
 
-func render_component_properties(sample_instance, container: Control):
-	var props: Array = sample_instance.get_property_list()
-	for prop in props:
-		if prop.name in ["script", "RefCounted", "Built-in script"]:
-			continue
-		render_property(sample_instance, prop.name, prop.type, container)
+# func render_component_properties(sample_instance, container: Control):
+# 	var props: Array = sample_instance.get_property_list()
+# 	for prop in props:
+# 		if prop.name in ["script", "RefCounted", "Built-in script"]:
+# 			continue
+# 		render_property(sample_instance, prop.name, prop.type, container)
 
-func render_property(comp_instance, prop_name: String, type: int, container: Control):
-	var current_value = comp_instance.get(prop_name)
+# func render_property(comp_instance, prop_name: String, type: int, container: Control):
+# 	var current_value = comp_instance.get(prop_name)
 	
-	# Create a horizontal container for label + input
-	var hbox = HBoxContainer.new()
-	safe_add_child_to(container, hbox)
+# 	# Create a horizontal container for label + input
+# 	var hbox = HBoxContainer.new()
+# 	safe_add_child_to(container, hbox)
 	
-	var label = Label.new()
-	label.text = prop_name.capitalize() + ":"
-	label.custom_minimum_size.x = 120
-	safe_add_child_to(hbox, label)
+# 	var label = Label.new()
+# 	label.text = prop_name.capitalize() + ":"
+# 	label.custom_minimum_size.x = 120
+# 	safe_add_child_to(hbox, label)
 	
-	# Create appropriate input control based on type
-	var input_control: Control
+# 	# Create appropriate input control based on type
+# 	var input_control: Control
 	
-	match type:
-		TYPE_BOOL:
-			input_control = UIUtils._create_bool_input(current_value)
+# 	match type:
+# 		TYPE_BOOL:
+# 			input_control = UIUtils._create_bool_input(current_value)
 		
-		TYPE_INT:
-			input_control = UIUtils._create_int_input(current_value)
+# 		TYPE_INT:
+# 			input_control = UIUtils._create_int_input(current_value)
 		
-		TYPE_FLOAT:
-			input_control = UIUtils._create_float_input(current_value)
+# 		TYPE_FLOAT:
+# 			input_control = UIUtils._create_float_input(current_value)
 		
-		TYPE_STRING:
-			input_control = UIUtils._create_string_input(current_value)
+# 		TYPE_STRING:
+# 			input_control = UIUtils._create_string_input(current_value)
 		
-		TYPE_VECTOR2:
-			input_control = UIUtils._create_vector2_input(current_value)
+# 		TYPE_VECTOR2:
+# 			input_control = UIUtils._create_vector2_input(current_value)
 		
-		TYPE_VECTOR3:
-			input_control = UIUtils._create_vector3_input(current_value)
+# 		TYPE_VECTOR3:
+# 			input_control = UIUtils._create_vector3_input(current_value)
 		
-		TYPE_VECTOR4:
-			input_control = UIUtils._create_vector4_input(current_value)
+# 		TYPE_VECTOR4:
+# 			input_control = UIUtils._create_vector4_input(current_value)
 		
-		_:
-			# Fallback for unsupported types
-			input_control = UIUtils._create_string_input(str(current_value))
+# 		_:
+# 			# Fallback for unsupported types
+# 			input_control = UIUtils._create_string_input(str(current_value))
 	
-	safe_add_child_to(hbox, input_control)
+# 	safe_add_child_to(hbox, input_control)
 	
-	self.component_controls.append(hbox)
-	# Connect the input to update the component property
-	# _connect_input_to_property(input_control, comp_instance, prop_name, type)
+# 	self.component_controls.append(hbox)
+# 	# Connect the input to update the component property
+# 	# _connect_input_to_property(input_control, comp_instance, prop_name, type)
