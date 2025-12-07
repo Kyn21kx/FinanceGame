@@ -448,6 +448,9 @@ class CameraTarget:
 class Interactable:
 	var interaction_range : float = 5
 	
+	func _init(interaction_range : float) -> void:
+		self.interaction_range = interaction_range
+	
 	static func get_type_name() -> StringName:
 		return "Interactable"
 
@@ -463,6 +466,6 @@ class InteractionEvent:
 	static func get_type_name() -> StringName:
 		return "InteractionEvent"
 
-class Dispenser:
-	func get_type_name() -> StringName:
-		return "Dispenser"
+class DispenserComponent:
+	static func get_type_name() -> StringName:
+		return "DispenserComponent"

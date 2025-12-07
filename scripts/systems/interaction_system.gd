@@ -1,3 +1,4 @@
+extends Node
 class_name InteractionSystem
 
 var interactors_query := Query.new()
@@ -11,7 +12,10 @@ func _ready() -> void:
 	self.interactables_query.with_and_register(Components.PhysicsBody.get_type_name())
 
 func _get_interaction_from_input(event : InputEvent, controller : Components.Controller) -> Components.Interaction:
-	if event.action == controller.use_action:
+	#print("_get_interaction_from_input called")
+	#print("  action: ", event.as_text())
+	
+	if event.is_action_pressed(controller.use_action):
 		return Components.Interaction.Use
 	
 	return Components.Interaction.None

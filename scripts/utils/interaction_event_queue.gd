@@ -1,4 +1,27 @@
-class_name InteractionEventQueue
+class_name InteractionEventQueue extends Node
+
+static var _event_query : Query
+
+func _ready() -> void:
+	InteractionEventQueue._event_query = Query.new()
+	InteractionEventQueue._event_query.with_and_register(Components.InteractionEvent.get_type_name())
+
+static func process_interactable_events(interactable_id : RID, on_event_callback: Callable, event_handled : bool = true) -> void:
+	# expected callback: on_event(event : Component.InteractionEvent)
+	if InteractionEventQueue._event_query == null:
+		return
+	
+	InteractionEventQueue._event_query.each(func process_collectables(event_id: RID, components: Array):
+		var event : Components.InteractionEvent = components[0]
+		
+		if event.interactable != interactable_id:
+			return
+		
+		on_event_callback.call(event)
+		
+		if event_handled:
+			InteractionEventQueue.event_handled(event_id)
+	)
 
 static func event_handled(event_id : RID) -> void:
 	FlecsScene.destroy_raw_entity(event_id, func destructor():
@@ -6,6 +29,8 @@ static func event_handled(event_id : RID) -> void:
 	)
 
 static func register_event(interactable_id : RID, interactor_id : RID, interaction : Components.Interaction) -> void:
+	# admitedley we could just store them on a regular array, but...
+	
 	var interaction_event := FlecsScene.create_raw_entity()
 	var interaction_event_comp := Components.InteractionEvent.new()
 	

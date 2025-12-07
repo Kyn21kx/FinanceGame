@@ -48,6 +48,7 @@ func _ready() -> void:
 	controller_comp_p1.rs_down = "rs_down_p1"
 	controller_comp_p1.rs_left = "rs_left_p1"
 	controller_comp_p1.rs_right = "rs_right_p1"
+	controller_comp_p1.use_action = "use_p1"
 	var mesh_1 : Mesh = self.player_model.duplicate()
 	var mat_1 := StandardMaterial3D.new()
 	mat_1.albedo_color = Color.RED
@@ -68,7 +69,8 @@ func _ready() -> void:
 	controller_comp_p2.rs_down = "rs_down_p2"
 	controller_comp_p2.rs_left = "rs_left_p2"
 	controller_comp_p2.rs_right = "rs_right_p2"
-
+	controller_comp_p2.use_action = "use_p2"
+	
 	var mesh_2 : Mesh = self.player_model.duplicate()
 	var mat_2 := StandardMaterial3D.new()
 	mat_2.albedo_color = Color.SKY_BLUE
@@ -166,6 +168,9 @@ func _make_player(controller_comp: Components.Controller, mesh: Mesh) -> void:
 	FlecsScene.entity_add_component_instance(player, Components.Throwable.get_type_name(), throwable_comp)
 
 	FlecsScene.entity_add_component_instance(player, Components.CameraTarget.get_type_name(), Components.CameraTarget.new())
+	
+	var interactor_comp := Components.Interactor.new()
+	FlecsScene.entity_add_component_instance(player, Components.Interactor.get_type_name(), interactor_comp)
 
 
 func _make_coin(position: Vector3, coin_shape: Shape3D) -> void:
@@ -189,6 +194,8 @@ func _make_coin(position: Vector3, coin_shape: Shape3D) -> void:
 	collectable_comp.weight = 2
 	FlecsScene.entity_add_component_instance(coin, Components.Collectable.get_type_name(), collectable_comp)
 
+func _make_coin_default_shape(position : Vector3) -> void:
+	self._make_coin(position, self.coin_model.create_convex_shape())
 
 func _process(delta: float) -> void:
 	pass
