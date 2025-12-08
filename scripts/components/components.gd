@@ -470,7 +470,3 @@ class InteractionEvent:
 	
 	static func get_type_name() -> StringName:
 		return "InteractionEvent"
-
-class DispenserComponent:
-	static func get_type_name() -> StringName:
-		return "DispenserComponent"

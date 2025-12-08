@@ -147,10 +147,8 @@ transform = Transform3D(0.5, -7.45058e-09, 0, 0, 0.5, 0, 0, 0, 0.5, -0.0299711, 
 visible = false
 calculate_tangents = false
 
-[node name="StaticBody" parent="." node_paths=PackedStringArray("spawn_system") instance=ExtResource("15_loh3e")]
+[node name="StaticBody" parent="." instance=ExtResource("15_loh3e")]
 transform = Transform3D(0.635445, 0, 0.772146, 0, 1, 0, -0.772146, 0, 0.635445, -6.95731, 0, -7.23054)
-interaction_range = 4.0
-spawn_system = NodePath("../EntitySpawnSystem")
 
 [node name="PaintCan" parent="." instance=ExtResource("16_llah2")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.06006, 0, -8.55969)
+transform = Transform3D(0.54711, -0.83706, 0, 0.83706, 0.54711, 0, 0, 0, 1, 5.06006, 11.9033, -8.55969)
