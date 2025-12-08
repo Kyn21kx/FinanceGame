@@ -35,9 +35,9 @@ func _input(event: InputEvent) -> void:
 		interactor_mesh.mesh.surface_set_material(0, material)
 		
 		FlecsScene.destroy_raw_entity(self.id, func destructor():
-			self.queue_free()
-			PhysicsServer3D.body_remove_shape(self.physics_body_comp.body_id, 0)
+			# PhysicsServer3D.body_remove_shape(self.physics_body_comp.body_id, 0)
 			RenderingServer.free_rid(self.mesh_comp.instance)
+			self.queue_free()
 		)
 	)
 
