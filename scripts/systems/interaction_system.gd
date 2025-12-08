@@ -22,8 +22,12 @@ func _get_interaction_from_input(event : InputEvent, controller : Components.Con
 
 func _input(event : InputEvent) -> void:
 	self.interactables_query.each(func cb_interactables(interactable_id : RID, interactable_comps: Array):
-		var interactable_comp = interactable_comps[0]
+		var interactable_comp : Components.Interactable = interactable_comps[0]
 		var interactable_phybod_comp : Components.PhysicsBody = interactable_comps[1]
+		
+		# enabled / disabled interactable state
+		if interactable_comp.enabled == false:
+			return
 		
 		self.interactors_query.each(func cb_interactors(interactor_id : RID, interactor_comps : Array):
 			var interactor_comp : Components.Interactor = interactor_comps[0]
@@ -41,14 +45,21 @@ func _input(event : InputEvent) -> void:
 			if interaction == Components.Interaction.None:
 				return
 			
-			# add event to queue, is the specific interactable system responsability to handle 
-			# such event and delete it from the queue
+			# cooldown
+			var now : int = Time.get_ticks_msec()
+			
+			if now - interactable_comp.last_interaction < interactable_comp.cooldown:
+				return
+			
+			interactable_comp.last_interaction = now
+			
+			# add interaction event to queue
+			# is the specific interactable system responsability to handle such event and delete it from the queue
 			InteractionEventQueue.register_event(interactable_id, interactor_id, interaction)
 			
 			# TODO: (optional) ensure no more than 1 event with the same values exists
 			# TODO: (optional) ensure no more than 1 event per interactable exist 
-			# TODO: interaction cooldown
-			# TODO: lock interaction -> enabled / disable interactable state
-			# TODO: lock interaction -> reserve interactable interaction to specific interactor
+			# TODO: lock interaction -> reserve interactable interactions to specific interactor
+			# TODO: handle on_enter / on_exit interactable area events
 		)
 	)

@@ -31,6 +31,8 @@ static func event_handled(event_id : RID) -> void:
 static func register_event(interactable_id : RID, interactor_id : RID, interaction : Components.Interaction) -> void:
 	# admitedley we could just store them on a regular array, but...
 	
+	# print("register_event(interactable_id: %s, interactor_id: %s, interaction: %s)" % [interactable_id, interactor_id, interaction])
+	
 	var interaction_event := FlecsScene.create_raw_entity()
 	var interaction_event_comp := Components.InteractionEvent.new()
 	

@@ -446,10 +446,14 @@ class CameraTarget:
 		return "CameraTarget"
 
 class Interactable:
-	var interaction_range : float = 5
+	var interaction_range : float
+	var cooldown : int # miliseconds
+	var last_interaction : int = -1 # miliseconds
+	var enabled : bool = true
 	
-	func _init(interaction_range : float) -> void:
+	func _init(interaction_range : float = 10, cooldown : int = 10) -> void:
 		self.interaction_range = interaction_range
+		self.cooldown = cooldown
 	
 	static func get_type_name() -> StringName:
 		return "Interactable"

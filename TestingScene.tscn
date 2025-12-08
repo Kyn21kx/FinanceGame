@@ -148,5 +148,5 @@ calculate_tangents = false
 
 [node name="StaticBody" parent="." node_paths=PackedStringArray("spawn_system") instance=ExtResource("15_loh3e")]
 transform = Transform3D(0.635445, 0, 0.772146, 0, 1, 0, -0.772146, 0, 0.635445, -6.95731, 0, -7.23054)
-interaction_range = 2.0
+interaction_range = 4.0
 spawn_system = NodePath("../EntitySpawnSystem")
