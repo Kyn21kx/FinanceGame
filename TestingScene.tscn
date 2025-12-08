@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://17diqbcutb3p"]
+[gd_scene load_steps=22 format=3 uid="uid://17diqbcutb3p"]
 
 [ext_resource type="Script" uid="uid://b2271ootsknqm" path="res://scripts/systems/movement_system.gd" id="1_dc2kq"]
 [ext_resource type="Script" uid="uid://7sut20oko3d3" path="res://tester.gd" id="1_ulcth"]
@@ -15,6 +15,7 @@
 [ext_resource type="Material" uid="uid://bnb8hwnjk70ut" path="res://materials/BouncyTest.tres" id="12_bdiev"]
 [ext_resource type="Script" uid="uid://bb68d6gx6so21" path="res://bouncer.gd" id="13_pnog0"]
 [ext_resource type="PackedScene" uid="uid://dkkm6dklr6uuf" path="res://scenes/entities/dispenser.tscn" id="15_loh3e"]
+[ext_resource type="PackedScene" uid="uid://cja4hwcvkwnuq" path="res://scenes/entities/paint_can.tscn" id="16_llah2"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_ypt0w"]
 material = ExtResource("2_6mnxl")
@@ -150,3 +151,6 @@ calculate_tangents = false
 transform = Transform3D(0.635445, 0, 0.772146, 0, 1, 0, -0.772146, 0, 0.635445, -6.95731, 0, -7.23054)
 interaction_range = 4.0
 spawn_system = NodePath("../EntitySpawnSystem")
+
+[node name="PaintCan" parent="." instance=ExtResource("16_llah2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.06006, 0, -8.55969)

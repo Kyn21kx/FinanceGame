@@ -61,5 +61,6 @@ func _input(event : InputEvent) -> void:
 			# TODO: (optional) ensure no more than 1 event per interactable exist 
 			# TODO: lock interaction -> reserve interactable interactions to specific interactor
 			# TODO: handle on_enter / on_exit interactable area events
+			# TODO: handle interactor on multiple interactables interaction range -> make it such that it can only interact with the closest one
 		)
 	)

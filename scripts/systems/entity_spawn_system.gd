@@ -77,18 +77,17 @@ func _ready() -> void:
 	mesh_2.surface_set_material(0, mat_2)
 	# self._make_player(controller_comp_p2, mesh_2)
 	
-	var coin_shape : Shape3D = self.coin_model.create_convex_shape()
-	self._make_coin(Vector3(2, 0, 1), coin_shape)
-	self._make_coin(Vector3(3, 0, 1), coin_shape)
-	self._make_coin(Vector3(4, 0, 1), coin_shape)
-	self._make_coin(Vector3(1.5, 0, 1.5), coin_shape)
-	self._make_coin(Vector3(3.5, 0, 1.5), coin_shape)
-	self._make_coin(Vector3(-2, 0, -2), coin_shape)
-	self._make_coin(Vector3(-2, 0, -2.5), coin_shape)
-	self._make_coin(Vector3(-2.5, 0, -3), coin_shape)
-	self._make_coin(Vector3(-1, 0, -3.5), coin_shape)
-
-
+	#var coin_shape : Shape3D = self.coin_model.create_convex_shape()
+	#self._make_coin(Vector3(2, 0, 1), coin_shape)
+	#self._make_coin(Vector3(3, 0, 1), coin_shape)
+	#self._make_coin(Vector3(4, 0, 1), coin_shape)
+	#self._make_coin(Vector3(1.5, 0, 1.5), coin_shape)
+	#self._make_coin(Vector3(3.5, 0, 1.5), coin_shape)
+	#self._make_coin(Vector3(-2, 0, -2), coin_shape)
+	#self._make_coin(Vector3(-2, 0, -2.5), coin_shape)
+	#self._make_coin(Vector3(-2.5, 0, -3), coin_shape)
+	#self._make_coin(Vector3(-1, 0, -3.5), coin_shape)wsawasdas
+	
 	self._make_env_object(self.box_mesh, 10)
 	
 	self._make_ball()
@@ -172,6 +171,8 @@ func _make_player(controller_comp: Components.Controller, mesh: Mesh) -> void:
 	var interactor_comp := Components.Interactor.new()
 	FlecsScene.entity_add_component_instance(player, Components.Interactor.get_type_name(), interactor_comp)
 
+func _make_can(position: Vector3) -> void:
+	var entity_id : RID = FlecsScene.create_raw_entity()
 
 func _make_coin(position: Vector3, coin_shape: Shape3D) -> void:
 	var coin : RID = FlecsScene.create_raw_entity()

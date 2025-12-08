@@ -16,7 +16,8 @@ enum Item {
 	Coke = 2 << 3,
 	Vitamin = 2 << 4,
 	Fungi = 2 << 5,
-	IsPowerUp = Monster | Tobacco | Dumbell | Coke | Vitamin | Fungi
+	IsPowerUp = Monster | Tobacco | Dumbell | Coke | Vitamin | Fungi,
+	PaintCan = 4
 }
  
 enum ThrowableState { Released, Dragging, Thrown }
