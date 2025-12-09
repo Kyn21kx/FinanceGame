@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://17diqbcutb3p"]
+[gd_scene load_steps=25 format=3 uid="uid://17diqbcutb3p"]
 
 [ext_resource type="Script" uid="uid://b2271ootsknqm" path="res://scripts/systems/movement_system.gd" id="1_dc2kq"]
 [ext_resource type="Script" uid="uid://7sut20oko3d3" path="res://tester.gd" id="1_ulcth"]
@@ -12,15 +12,28 @@
 [ext_resource type="Script" uid="uid://dsn53ggkji2d0" path="res://scripts/systems/bag_system.gd" id="6_boodp"]
 [ext_resource type="Script" uid="uid://bf5pb7emmodrb" path="res://scripts/systems/camera_system.gd" id="9_35ann"]
 [ext_resource type="Script" uid="uid://fy1d7mnro0pu" path="res://scripts/systems/interaction_system.gd" id="9_tfe87"]
+[ext_resource type="Script" uid="uid://cdj7dcn83873w" path="res://scripts/systems/paint_can_system.gd" id="10_gndi7"]
 [ext_resource type="Material" uid="uid://bnb8hwnjk70ut" path="res://materials/BouncyTest.tres" id="12_bdiev"]
 [ext_resource type="Script" uid="uid://bb68d6gx6so21" path="res://bouncer.gd" id="13_pnog0"]
 [ext_resource type="PackedScene" uid="uid://dkkm6dklr6uuf" path="res://scenes/entities/dispenser.tscn" id="15_loh3e"]
-[ext_resource type="PackedScene" uid="uid://cja4hwcvkwnuq" path="res://scenes/entities/paint_can.tscn" id="16_llah2"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_ypt0w"]
 material = ExtResource("2_6mnxl")
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_5gf4p"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_llah2"]
+albedo_color = Color(0, 1, 1, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_gndi7"]
+material = SubResource("StandardMaterial3D_llah2")
+top_radius = 0.25
+bottom_radius = 0.25
+height = 0.5
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_llah2"]
+height = 0.5
+radius = 0.25
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6mnxl"]
 
@@ -42,6 +55,8 @@ player_model = SubResource("CylinderMesh_ypt0w")
 player_shape = SubResource("CylinderShape3D_5gf4p")
 player_layer = 2
 coin_model = ExtResource("4_b7scd")
+paint_can_model = SubResource("CylinderMesh_gndi7")
+paint_can_shape = SubResource("CylinderShape3D_llah2")
 
 [node name="SceneSystems" type="Node" parent="."]
 script = ExtResource("2_iyuba")
@@ -61,6 +76,9 @@ metadata/_custom_type_script = "uid://dsn53ggkji2d0"
 
 [node name="InteractionSystem" type="Node" parent="."]
 script = ExtResource("9_tfe87")
+
+[node name="PaintCanSystem" type="Node" parent="."]
+script = ExtResource("10_gndi7")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.878525, 0.477695, 0, -0.477695, 0.878525, 0, 10.6069, 19.9432)
@@ -147,8 +165,6 @@ transform = Transform3D(0.5, -7.45058e-09, 0, 0, 0.5, 0, 0, 0, 0.5, -0.0299711, 
 visible = false
 calculate_tangents = false
 
-[node name="StaticBody" parent="." instance=ExtResource("15_loh3e")]
+[node name="StaticBody" parent="." node_paths=PackedStringArray("spawn_system") instance=ExtResource("15_loh3e")]
 transform = Transform3D(0.635445, 0, 0.772146, 0, 1, 0, -0.772146, 0, 0.635445, -6.95731, 0, -7.23054)
-
-[node name="PaintCan" parent="." instance=ExtResource("16_llah2")]
-transform = Transform3D(0.54711, -0.83706, 0, 0.83706, 0.54711, 0, 0, 0, 1, 5.06006, 11.9033, -8.55969)
+spawn_system = NodePath("../EntitySpawnSystem")

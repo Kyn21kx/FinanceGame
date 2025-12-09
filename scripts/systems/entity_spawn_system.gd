@@ -2,23 +2,17 @@ extends Node
 class_name EntitySpawnSystem
 
 # Maybe the player prefab here
-@export
-var player_model: Mesh
+@export_group("Player")
+@export var player_model: Mesh
+@export var player_prefab: PackedScene
+@export var player_shape: Shape3D
+@export var player_layer: int
 
-@export
-var player_prefab: PackedScene
+@export_group("Coin")
+@export var coin_model: Mesh
 
-@export
-var player_shape: Shape3D
-
-@export
-var player_layer: int
-
-@export
-var coin_model: Mesh
-
-@export
-var sample_pos: Vector3
+@export_group("Random")
+@export var sample_pos: Vector3
 
 var box_mesh := BoxMesh.new()
 
@@ -27,6 +21,10 @@ var box_shape := BoxShape3D.new()
 var ball_mesh := SphereMesh.new()
 
 var ball_shape := SphereShape3D.new()
+
+@export_group("PaintCan")
+@export var paint_can_model : Mesh
+@export var paint_can_shape : Shape3D 
 
 func _ready() -> void:
 	var float_comp : float = 4.8
@@ -171,9 +169,6 @@ func _make_player(controller_comp: Components.Controller, mesh: Mesh) -> void:
 	var interactor_comp := Components.Interactor.new()
 	FlecsScene.entity_add_component_instance(player, Components.Interactor.get_type_name(), interactor_comp)
 
-func _make_can(position: Vector3) -> void:
-	var entity_id : RID = FlecsScene.create_raw_entity()
-
 func _make_coin(position: Vector3, coin_shape: Shape3D) -> void:
 	var coin : RID = FlecsScene.create_raw_entity()
 	var mesh_comp := Components.MeshComponent.new(self.coin_model, self.get_viewport().world_3d)
@@ -197,6 +192,24 @@ func _make_coin(position: Vector3, coin_shape: Shape3D) -> void:
 
 func _make_coin_default_shape(position : Vector3) -> void:
 	self._make_coin(position, self.coin_model.create_convex_shape())
+
+func _make_paint_can(color : Color = Color.AQUA) -> RID:
+	var id := FlecsScene.create_raw_entity()
+	var paint_can_comp := Components.PaintCan.new()
+	paint_can_comp.color = color
+	var interactable_comp := Components.Interactable.new(2, 1000)
+	var physics_body_comp := Components.PhysicsBody.new(self.paint_can_shape)
+	var mesh_comp := Components.MeshComponent.new(self.paint_can_model.duplicate(true), self.get_viewport().world_3d)
+	
+	FlecsScene.entity_add_component_instance(id, Components.PaintCan.get_type_name(), paint_can_comp)
+	FlecsScene.entity_add_component_instance(id, Components.Interactable.get_type_name(), interactable_comp)
+	FlecsScene.entity_add_component_instance(id, Components.PhysicsBody.get_type_name(), physics_body_comp)
+	FlecsScene.entity_add_component_instance(id, Components.MeshComponent.get_type_name(), mesh_comp)
+	
+	#var throwable_comp := Components.Throwable.new()
+	#FlecsScene.entity_add_component_instance(id, Components.Throwable.get_type_name(), throwable_comp)
+	
+	return id
 
 func _process(delta: float) -> void:
 	pass

@@ -1,5 +1,4 @@
-extends Node
-class_name InteractionSystem
+class_name InteractionSystem extends Node
 
 var interactors_query := Query.new()
 var interactables_query := Query.new()
@@ -15,12 +14,12 @@ func _get_interaction_from_input(event : InputEvent, controller : Components.Con
 	#print("_get_interaction_from_input called")
 	#print("  action: ", event.as_text())
 	
-	if event.is_action_pressed(controller.use_action):
+	if event.is_action_pressed(controller.use_action) and !event.is_echo():
 		return Components.Interaction.Use
 	
 	return Components.Interaction.None
 
-func _input(event : InputEvent) -> void:
+func _handle_input(event : InputEvent) -> void:
 	self.interactables_query.each(func cb_interactables(interactable_id : RID, interactable_comps: Array):
 		var interactable_comp : Components.Interactable = interactable_comps[0]
 		var interactable_phybod_comp : Components.PhysicsBody = interactable_comps[1]
@@ -64,3 +63,9 @@ func _input(event : InputEvent) -> void:
 			# TODO: handle interactor on multiple interactables interaction range -> make it such that it can only interact with the closest one
 		)
 	)
+	
+func _input(event : InputEvent) -> void:
+	self._handle_input(event)
+
+func _process(delta: float) -> void:
+	pass

@@ -92,15 +92,19 @@ class PhysicsBody:
 		PhysicsServer3D.body_add_shape(self.body_id, self.shape)
 		PhysicsServer3D.body_set_shape_transform(self.body_id, 0, Transform3D.IDENTITY)
 		PhysicsServer3D.body_set_mode(self.body_id, PhysicsServer3D.BODY_MODE_RIGID)
-
+	
 		self.set_transform(transform)
 	
 	func get_transform() -> Transform3D:
 		return self.transform
-
+	
+	func set_body_id(value : RID) -> void:
+		PhysicsServer3D.free_rid(self.body_id)
+		self.body_id = value
+	
 	func set_transform(xform: Transform3D) -> void:
 		PhysicsServer3D.body_set_state(self.body_id, PhysicsServer3D.BODY_STATE_TRANSFORM, xform)
-
+	
 	func set_velocity(velocity: Vector3) -> void:
 		PhysicsServer3D.body_set_state(self.body_id, PhysicsServer3D.BODY_STATE_LINEAR_VELOCITY, velocity)
 	
@@ -119,6 +123,10 @@ class PhysicsBody:
 	
 	func apply_force(force: Vector3) -> void:
 		PhysicsServer3D.body_apply_central_force(self.body_id, force)
+
+	func apply_position_force(force: Vector3, position: Vector3 = Vector3(0, 0, 0)) -> void:
+		PhysicsServer3D.body_apply_force(self.body_id, force, position)
+		pass
 
 	func apply_impulse(impulse: Vector3) -> void:
 		PhysicsServer3D.body_apply_central_impulse(self.body_id, impulse)
@@ -470,3 +478,9 @@ class InteractionEvent:
 	
 	static func get_type_name() -> StringName:
 		return "InteractionEvent"
+
+class PaintCan:
+	var color : Color = Color.AQUA
+	
+	static func get_type_name() -> StringName:
+		return "PaintCan"

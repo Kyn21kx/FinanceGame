@@ -11,10 +11,27 @@ static func process_interactable_events(interactable_id : RID, on_event_callback
 	if InteractionEventQueue._event_query == null:
 		return
 	
-	InteractionEventQueue._event_query.each(func process_collectables(event_id: RID, components: Array):
+	InteractionEventQueue._event_query.each(func process_events(event_id: RID, components: Array):
 		var event : Components.InteractionEvent = components[0]
 		
 		if event.interactable != interactable_id:
+			return
+		
+		on_event_callback.call(event)
+		
+		if event_handled:
+			InteractionEventQueue.event_handled(event_id)
+	)
+
+static func process_interactable_with_tag_events(tag : StringName, on_event_callback: Callable, event_handled : bool = true) -> void:
+	# expected callback: on_event(event : Component.InteractionEvent)
+	if InteractionEventQueue._event_query == null:
+		return
+	
+	InteractionEventQueue._event_query.each(func process_events(event_id: RID, components: Array):
+		var event : Components.InteractionEvent = components[0]
+		
+		if FlecsScene.entity_has_component(event.interactable, tag) == false:
 			return
 		
 		on_event_callback.call(event)
