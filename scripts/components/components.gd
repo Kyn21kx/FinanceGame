@@ -16,11 +16,11 @@ enum Item {
 	Coke = 2 << 3,
 	Vitamin = 2 << 4,
 	Fungi = 2 << 5,
-	IsPowerUp = Monster | Tobacco | Dumbell | Coke | Vitamin | Fungi
+	IsPowerUp = Monster | Tobacco | Dumbell | Coke | Vitamin | Fungi,
+	PaintCan = 4
 }
  
 enum ThrowableState { Released, Dragging, Thrown }
-
 enum PhysicsMasks {
 	GizmoLayer = 1 << 31,
 	JumpingLayer = 2 << 0,
@@ -33,6 +33,8 @@ enum JointType {
 	ConeTwist,
 	Generic6DOF
 }
+
+enum Interaction { None, Use }
 
 const THROWABLE_MAX_WEIGHT := 20
 
@@ -90,15 +92,19 @@ class PhysicsBody:
 		PhysicsServer3D.body_add_shape(self.body_id, self.shape)
 		PhysicsServer3D.body_set_shape_transform(self.body_id, 0, Transform3D.IDENTITY)
 		PhysicsServer3D.body_set_mode(self.body_id, PhysicsServer3D.BODY_MODE_RIGID)
-
+	
 		self.set_transform(transform)
 	
 	func get_transform() -> Transform3D:
 		return self.transform
-
+	
+	func set_body_id(value : RID) -> void:
+		PhysicsServer3D.free_rid(self.body_id)
+		self.body_id = value
+	
 	func set_transform(xform: Transform3D) -> void:
 		PhysicsServer3D.body_set_state(self.body_id, PhysicsServer3D.BODY_STATE_TRANSFORM, xform)
-
+	
 	func set_velocity(velocity: Vector3) -> void:
 		PhysicsServer3D.body_set_state(self.body_id, PhysicsServer3D.BODY_STATE_LINEAR_VELOCITY, velocity)
 	
@@ -117,6 +123,10 @@ class PhysicsBody:
 	
 	func apply_force(force: Vector3) -> void:
 		PhysicsServer3D.body_apply_central_force(self.body_id, force)
+
+	func apply_position_force(force: Vector3, position: Vector3 = Vector3(0, 0, 0)) -> void:
+		PhysicsServer3D.body_apply_force(self.body_id, force, position)
+		pass
 
 	func apply_impulse(impulse: Vector3) -> void:
 		PhysicsServer3D.body_apply_central_impulse(self.body_id, impulse)
@@ -294,6 +304,7 @@ class Controller:
 	var dash_key: StringName
 	var hit_key: StringName
 	var throw_action: StringName
+	var use_action: StringName
 	
 	func get_axis_left() -> Vector2:
 		var horizontal: float = Input.get_axis(self.left_key, self.right_key)
@@ -442,3 +453,34 @@ class HeartResistance:
 class CameraTarget:
 	static func get_type_name() -> StringName:
 		return "CameraTarget"
+
+class Interactable:
+	var interaction_range : float
+	var cooldown : int # miliseconds
+	var last_interaction : int = -1 # miliseconds
+	var enabled : bool = true
+	
+	func _init(interaction_range : float = 10, cooldown : int = 10) -> void:
+		self.interaction_range = interaction_range
+		self.cooldown = cooldown
+	
+	static func get_type_name() -> StringName:
+		return "Interactable"
+
+class Interactor:
+	static func get_type_name() -> StringName:
+		return "Interactor"
+
+class InteractionEvent:
+	var interactor : RID
+	var interactable : RID 
+	var interaction : Interaction
+	
+	static func get_type_name() -> StringName:
+		return "InteractionEvent"
+
+class PaintCan:
+	var color : Color = Color.AQUA
+	
+	static func get_type_name() -> StringName:
+		return "PaintCan"

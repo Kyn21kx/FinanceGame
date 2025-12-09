@@ -2,23 +2,17 @@ extends Node
 class_name EntitySpawnSystem
 
 # Maybe the player prefab here
-@export
-var player_model: Mesh
+@export_group("Player")
+@export var player_model: Mesh
+@export var player_prefab: PackedScene
+@export var player_shape: Shape3D
+@export var player_layer: int
 
-@export
-var player_prefab: PackedScene
+@export_group("Coin")
+@export var coin_model: Mesh
 
-@export
-var player_shape: Shape3D
-
-@export
-var player_layer: int
-
-@export
-var coin_model: Mesh
-
-@export
-var sample_pos: Vector3
+@export_group("Random")
+@export var sample_pos: Vector3
 
 var box_mesh := BoxMesh.new()
 
@@ -27,6 +21,10 @@ var box_shape := BoxShape3D.new()
 var ball_mesh := SphereMesh.new()
 
 var ball_shape := SphereShape3D.new()
+
+@export_group("PaintCan")
+@export var paint_can_model : Mesh
+@export var paint_can_shape : Shape3D 
 
 func _ready() -> void:
 	var float_comp : float = 4.8
@@ -48,6 +46,7 @@ func _ready() -> void:
 	controller_comp_p1.rs_down = "rs_down_p1"
 	controller_comp_p1.rs_left = "rs_left_p1"
 	controller_comp_p1.rs_right = "rs_right_p1"
+	controller_comp_p1.use_action = "use_p1"
 	var mesh_1 : Mesh = self.player_model.duplicate()
 	var mat_1 := StandardMaterial3D.new()
 	mat_1.albedo_color = Color.RED
@@ -68,25 +67,25 @@ func _ready() -> void:
 	controller_comp_p2.rs_down = "rs_down_p2"
 	controller_comp_p2.rs_left = "rs_left_p2"
 	controller_comp_p2.rs_right = "rs_right_p2"
-
+	controller_comp_p2.use_action = "use_p2"
+	
 	var mesh_2 : Mesh = self.player_model.duplicate()
 	var mat_2 := StandardMaterial3D.new()
 	mat_2.albedo_color = Color.SKY_BLUE
 	mesh_2.surface_set_material(0, mat_2)
 	# self._make_player(controller_comp_p2, mesh_2)
 	
-	var coin_shape : Shape3D = self.coin_model.create_convex_shape()
-	self._make_coin(Vector3(2, 0, 1), coin_shape)
-	self._make_coin(Vector3(3, 0, 1), coin_shape)
-	self._make_coin(Vector3(4, 0, 1), coin_shape)
-	self._make_coin(Vector3(1.5, 0, 1.5), coin_shape)
-	self._make_coin(Vector3(3.5, 0, 1.5), coin_shape)
-	self._make_coin(Vector3(-2, 0, -2), coin_shape)
-	self._make_coin(Vector3(-2, 0, -2.5), coin_shape)
-	self._make_coin(Vector3(-2.5, 0, -3), coin_shape)
-	self._make_coin(Vector3(-1, 0, -3.5), coin_shape)
-
-
+	#var coin_shape : Shape3D = self.coin_model.create_convex_shape()
+	#self._make_coin(Vector3(2, 0, 1), coin_shape)
+	#self._make_coin(Vector3(3, 0, 1), coin_shape)
+	#self._make_coin(Vector3(4, 0, 1), coin_shape)
+	#self._make_coin(Vector3(1.5, 0, 1.5), coin_shape)
+	#self._make_coin(Vector3(3.5, 0, 1.5), coin_shape)
+	#self._make_coin(Vector3(-2, 0, -2), coin_shape)
+	#self._make_coin(Vector3(-2, 0, -2.5), coin_shape)
+	#self._make_coin(Vector3(-2.5, 0, -3), coin_shape)
+	#self._make_coin(Vector3(-1, 0, -3.5), coin_shape)wsawasdas
+	
 	self._make_env_object(self.box_mesh, 10)
 	
 	self._make_ball()
@@ -166,7 +165,9 @@ func _make_player(controller_comp: Components.Controller, mesh: Mesh) -> void:
 	FlecsScene.entity_add_component_instance(player, Components.Throwable.get_type_name(), throwable_comp)
 
 	FlecsScene.entity_add_component_instance(player, Components.CameraTarget.get_type_name(), Components.CameraTarget.new())
-
+	
+	var interactor_comp := Components.Interactor.new()
+	FlecsScene.entity_add_component_instance(player, Components.Interactor.get_type_name(), interactor_comp)
 
 func _make_coin(position: Vector3, coin_shape: Shape3D) -> void:
 	var coin : RID = FlecsScene.create_raw_entity()
@@ -189,6 +190,26 @@ func _make_coin(position: Vector3, coin_shape: Shape3D) -> void:
 	collectable_comp.weight = 2
 	FlecsScene.entity_add_component_instance(coin, Components.Collectable.get_type_name(), collectable_comp)
 
+func _make_coin_default_shape(position : Vector3) -> void:
+	self._make_coin(position, self.coin_model.create_convex_shape())
+
+func _make_paint_can(color : Color = Color.AQUA) -> RID:
+	var id := FlecsScene.create_raw_entity()
+	var paint_can_comp := Components.PaintCan.new()
+	paint_can_comp.color = color
+	var interactable_comp := Components.Interactable.new(2, 1000)
+	var physics_body_comp := Components.PhysicsBody.new(self.paint_can_shape)
+	var mesh_comp := Components.MeshComponent.new(self.paint_can_model.duplicate(true), self.get_viewport().world_3d)
+	
+	FlecsScene.entity_add_component_instance(id, Components.PaintCan.get_type_name(), paint_can_comp)
+	FlecsScene.entity_add_component_instance(id, Components.Interactable.get_type_name(), interactable_comp)
+	FlecsScene.entity_add_component_instance(id, Components.PhysicsBody.get_type_name(), physics_body_comp)
+	FlecsScene.entity_add_component_instance(id, Components.MeshComponent.get_type_name(), mesh_comp)
+	
+	#var throwable_comp := Components.Throwable.new()
+	#FlecsScene.entity_add_component_instance(id, Components.Throwable.get_type_name(), throwable_comp)
+	
+	return id
 
 func _process(delta: float) -> void:
 	pass
