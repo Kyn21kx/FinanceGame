@@ -142,6 +142,7 @@ func render_physic_meshes(_entity: RID, components: Array):
 
 	# Update the component's transform for all other systems
 	body.transform = xform
+	body._velocity_cache = direct_state.linear_velocity
 	# Then render
 	RenderingServer.instance_set_transform(mesh.instance, xform)
 	pass

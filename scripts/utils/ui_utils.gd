@@ -2,6 +2,9 @@
 # UIUtils.gd
 class_name UIUtils
 
+
+const SERIALIZE_CUSTOM_CONTROL := "serialize_to_custom_control"
+
 # All factories now require a non-null Callable on_change argument.
 # on_change.call(new_value) will be invoked with the full Variant value.
 
@@ -117,3 +120,62 @@ static func _create_vector3_input(value: Vector3, on_change: Callable, _is_read_
 	container.add_child(z_input)
 	return container
 
+static func _create_shape3d_input(value: Shape3D, on_change: Callable, _is_read_only: bool = false) -> HBoxContainer:
+	var container = HBoxContainer.new()
+	
+	# Label showing current shape resource
+	var resource_label = Label.new()
+	resource_label.custom_minimum_size.x = 200
+	resource_label.clip_text = true
+	if value != null:
+		resource_label.text = value.resource_path if value.resource_path != "" else "<%s>" % value.get_class()
+	else:
+		resource_label.text = "(No Shape)"
+	
+	container.add_child(resource_label)
+	
+	if not _is_read_only:
+		# Button to open file dialog
+		var select_button = Button.new()
+		select_button.text = "Select..."
+		select_button.custom_minimum_size.x = 80
+		
+		select_button.pressed.connect(func():
+			var file_dialog = EditorFileDialog.new() if Engine.is_editor_hint() else FileDialog.new()
+			file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+			file_dialog.access = FileDialog.ACCESS_RESOURCES
+			file_dialog.add_filter("*.tres, *.res", "Resource Files")
+			
+			file_dialog.file_selected.connect(func(path: String):
+				var loaded_resource = load(path)
+				if loaded_resource is Shape3D:
+					resource_label.text = path
+					on_change.call(loaded_resource)
+				else:
+					push_error("Selected resource is not a Shape3D")
+				file_dialog.queue_free()
+			)
+			
+			file_dialog.canceled.connect(func():
+				file_dialog.queue_free()
+			)
+			
+			container.add_child(file_dialog)
+			file_dialog.popup_centered_ratio(0.6)
+		)
+		
+		container.add_child(select_button)
+		
+		# Clear button
+		var clear_button = Button.new()
+		clear_button.text = "Clear"
+		clear_button.custom_minimum_size.x = 60
+		
+		clear_button.pressed.connect(func():
+			resource_label.text = "(No Shape)"
+			on_change.call(null)
+		)
+		
+		container.add_child(clear_button)
+	
+	return container

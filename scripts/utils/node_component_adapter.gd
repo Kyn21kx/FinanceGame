@@ -71,16 +71,25 @@ func render_component_properties(sample_instance):
 	
 	var props: Array = sample_instance.get_property_list()
 	for prop in props:
-		if prop.name in ["script", "RefCounted", "Built-in script"]:
+		var prop_name: String = prop.name
+		if prop_name in ["script", "RefCounted", "Built-in script"] or prop_name.begins_with("_"):
 			continue
 		var static_props: Dictionary = sample_instance.get_readonly_props()
-		var read_only : bool = prop.type == TYPE_RID || static_props.get(prop.name)
-		fields[prop.name] = sample_instance.get(prop.name)
-		var control_node : Control = render_property(sample_instance, prop.name, prop.type, read_only)
+		var read_only : bool = prop.type == TYPE_RID || static_props.get(prop_name)
+		fields[prop_name] = serialize_to_dict(sample_instance.get(prop_name))
+		var control_node : Control = render_property(sample_instance, prop_name, prop.type, read_only)
 		safe_add_child_to(self.current_header, control_node)
 
+func serialize_to_dict(value):
+	print("Serializing: ", value)
+	if value is Resource:
+		print("Was resource!")
+		# Save the path to the resource in the dictionary, not its string value
+		return value.resource_path
+	print("Finished serializing")
+	return value
 
-func render_property(comp_instance, prop_name: String, type: int, is_read_only: bool = false) -> Control:
+func render_property(comp_instance: Object, prop_name: String, type: int, is_read_only: bool = false) -> Control:
 	var current_value = comp_instance.get(prop_name)
 	
 	# Create a horizontal container for label + input
@@ -103,7 +112,7 @@ func render_property(comp_instance, prop_name: String, type: int, is_read_only: 
 		var relative_path : NodePath = root.get_path_to(current_editable_node)
 		var comp_data : Dictionary = self.global_metadata.get(str(relative_path))
 		var fields : Dictionary = comp_data[comp_instance.get_type_name()]
-		fields[prop_name] = p_val
+		fields[prop_name] = serialize_to_dict(p_val)
 		comp_instance.set(prop_name, p_val)
 		
 	match type:
@@ -125,8 +134,10 @@ func render_property(comp_instance, prop_name: String, type: int, is_read_only: 
 		TYPE_VECTOR3:
 			input_control = UIUtils._create_vector3_input(current_value, on_change_update, is_read_only)
 		_:
-			# Fallback for unsupported types
-			input_control = UIUtils._create_string_input(str(current_value), on_change_update,  is_read_only)
+			if comp_instance.has_method(UIUtils.SERIALIZE_CUSTOM_CONTROL):
+				input_control = comp_instance.call(UIUtils.SERIALIZE_CUSTOM_CONTROL, current_value, on_change_update, is_read_only)
+			else:
+				input_control = UIUtils._create_string_input(str(current_value), on_change_update,  is_read_only)
 	
 	safe_add_child_to(hbox, input_control)
 	
@@ -216,6 +227,9 @@ func _init() -> void:
 	if (file == null):
 		return
 	var json : String = file.get_as_text()
+	var parsed_json = JSON.parse_string(json)
+	if (parsed_json == null):
+		return
 	self.global_metadata = JSON.parse_string(json) as Dictionary
 
 func _parse_begin(_object: Object) -> void:

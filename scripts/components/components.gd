@@ -34,14 +34,29 @@ enum JointType {
 	Generic6DOF
 }
 
+
 const THROWABLE_MAX_WEIGHT := 20
 
 class PhysicsBody:
 	var body_id: RID
 	var shape: RID
-	# We need to keep a ref to the shape
-	var shape_ref: Shape3D
 	var transform: Transform3D = Transform3D.IDENTITY
+	var _velocity_cache: Vector3
+
+	# We need to keep a ref to the shape
+	var __shape_ref: Shape3D
+	var shape_ref: Shape3D:
+		get:
+			return self.__shape_ref
+		set(value):
+			print("Previous shape: ", self.shape)
+			if (self.shape.is_valid()):
+				PhysicsServer3D.body_remove_shape(self.body_id, 0)
+			self.__shape_ref = value
+			self.shape = self.__shape_ref.get_rid()
+			print("New shape: ", self.shape)
+			PhysicsServer3D.body_add_shape(self.body_id, self.shape)
+			
 
 	var axis_lock_linear_x : bool:
 		get:
@@ -80,18 +95,19 @@ class PhysicsBody:
 			self.lock_axis(PhysicsServer3D.BODY_AXIS_ANGULAR_Z, value)
 
 
-	func _init(p_shape: Shape3D = self.shape_ref, transform: Transform3D = Transform3D.IDENTITY) -> void:
-		self.shape = p_shape.get_rid()
-		self.shape_ref = p_shape
+	func _init(p_shape: Shape3D = BoxShape3D.new(), p_transform: Transform3D = Transform3D.IDENTITY) -> void:
 		self.body_id = PhysicsServer3D.body_create()
+		# This is handled by the shape setter
+		# self.shape = p_shape.get_rid()
+		# PhysicsServer3D.body_add_shape(self.body_id, self.shape)
+		self.shape_ref = p_shape
 		# Bad fix, but will suffice for now
 		var p_world : World3D = EditorImporterSystem.instance.get_world3d_consistent()
 		PhysicsServer3D.body_set_space(self.body_id, p_world.space)
-		PhysicsServer3D.body_add_shape(self.body_id, self.shape)
 		PhysicsServer3D.body_set_shape_transform(self.body_id, 0, Transform3D.IDENTITY)
 		PhysicsServer3D.body_set_mode(self.body_id, PhysicsServer3D.BODY_MODE_RIGID)
 
-		self.set_transform(transform)
+		self.set_transform(p_transform)
 	
 	func get_transform() -> Transform3D:
 		return self.transform
@@ -103,7 +119,7 @@ class PhysicsBody:
 		PhysicsServer3D.body_set_state(self.body_id, PhysicsServer3D.BODY_STATE_LINEAR_VELOCITY, velocity)
 	
 	func get_velocity() -> Vector3:
-		return PhysicsServer3D.body_get_state(self.body_id, PhysicsServer3D.BODY_STATE_LINEAR_VELOCITY)
+		return self._velocity_cache
 
 	func get_mass() -> float:
 		return PhysicsServer3D.body_get_param(self.body_id, PhysicsServer3D.BODY_PARAM_MASS)
@@ -123,7 +139,6 @@ class PhysicsBody:
 
 	func lock_axis(axis: int, locked: bool = true) -> void:
 		PhysicsServer3D.body_set_axis_lock(self.body_id, axis, locked)
-
 
 	func is_axis_locked(axis: int) -> bool:
 		return PhysicsServer3D.body_is_axis_locked(self.body_id, axis)
@@ -145,6 +160,11 @@ class PhysicsBody:
 	
 	static func get_type_name() -> StringName:
 		return "PhysicsBody"
+
+	static func serialize_to_custom_control(value, on_change: Callable, _is_read_only: bool = false) -> Control:
+		if (value is Shape3D):
+			return UIUtils._create_shape3d_input(value, on_change, _is_read_only)
+		return UIUtils._create_string_input(str(value), on_change,  _is_read_only)
 
 
 class PhysicsJoint:

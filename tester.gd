@@ -62,6 +62,11 @@ func set_component_data_for_entity(entity: RID, node_instance: Node, comp_dict: 
 		var fields : Dictionary = comp_dict[comp_key]
 	
 		for field_key in fields:
+			var property_instance = comp_instance.get(field_key)
+			if property_instance is Resource:
+				# Get the actual resource from disk and use it to instantiate the component instance
+				comp_instance.set(field_key, load(fields[field_key]))
+				continue
 			comp_instance.set(field_key, fields[field_key])
 
 		FlecsScene.entity_add_component_instance(entity, comp_instance.get_type_name(), comp_instance)
@@ -120,8 +125,7 @@ func generate_mesh() -> void:
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
-	# self._serialize_components()
-	# self.copy_ecs_data()
+	self.copy_ecs_data()
 	# self.generate_mesh()
 	pass
 
