@@ -40,7 +40,13 @@ const THROWABLE_MAX_WEIGHT := 20
 class PhysicsBody:
 	var body_id: RID
 	var shape: RID
-	var transform: Transform3D = Transform3D.IDENTITY
+	var _transform: Transform3D = Transform3D.IDENTITY
+	var transform: Transform3D:
+		get:
+			return self._transform
+		set(value):
+			self.set_transform(value)
+
 	var _velocity_cache: Vector3
 
 	# We need to keep a ref to the shape
@@ -107,10 +113,10 @@ class PhysicsBody:
 		PhysicsServer3D.body_set_shape_transform(self.body_id, 0, Transform3D.IDENTITY)
 		PhysicsServer3D.body_set_mode(self.body_id, PhysicsServer3D.BODY_MODE_RIGID)
 
-		self.set_transform(p_transform)
+		self._transform = p_transform
 	
 	func get_transform() -> Transform3D:
-		return self.transform
+		return self._transform
 
 	func set_transform(xform: Transform3D) -> void:
 		PhysicsServer3D.body_set_state(self.body_id, PhysicsServer3D.BODY_STATE_TRANSFORM, xform)

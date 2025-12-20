@@ -81,12 +81,9 @@ func render_component_properties(sample_instance):
 		safe_add_child_to(self.current_header, control_node)
 
 func serialize_to_dict(value):
-	print("Serializing: ", value)
 	if value is Resource:
-		print("Was resource!")
 		# Save the path to the resource in the dictionary, not its string value
 		return value.resource_path
-	print("Finished serializing")
 	return value
 
 func render_property(comp_instance: Object, prop_name: String, type: int, is_read_only: bool = false) -> Control:

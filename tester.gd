@@ -65,8 +65,17 @@ func set_component_data_for_entity(entity: RID, node_instance: Node, comp_dict: 
 			var property_instance = comp_instance.get(field_key)
 			if property_instance is Resource:
 				# Get the actual resource from disk and use it to instantiate the component instance
-				comp_instance.set(field_key, load(fields[field_key]))
+				var resource_path : String = fields[field_key]
+				assert(!resource_path.is_empty(), "Resource path for component field " + field_key + " is not set!")
+				comp_instance.set(field_key, load(resource_path))
 				continue
+			# For ECS imported nodes (they should already have a Transform3D component with the Node3D data)
+			if property_instance is Transform3D and node_instance is Node3D:
+				var setter := func _set_xform(xform: Transform3D):
+					comp_instance.set(field_key, xform)
+				setter.call_deferred(node_instance.global_transform)
+				continue
+
 			comp_instance.set(field_key, fields[field_key])
 
 		FlecsScene.entity_add_component_instance(entity, comp_instance.get_type_name(), comp_instance)
