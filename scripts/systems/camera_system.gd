@@ -47,4 +47,3 @@ func _process(delta: float) -> void:
 	if (diff <= error): return
 	self.fov = lerpf(self.fov, self.fov_max, delta)
 	pass
-

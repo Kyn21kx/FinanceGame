@@ -19,7 +19,7 @@ var GIZMO_SPAWN : RID
 func _ready() -> void:
 	# The query for physics objects
 	self.renderable_bodies_query.with_and_register(Components.PhysicsBody.get_type_name())
-	self.renderable_bodies_query.with_and_register(Components.MeshComponent.get_type_name())
+	self.renderable_bodies_query.with_maybe_and_register(Components.MeshComponent.get_type_name())
 	self.renderable_bodies_query.cache_mode(Query.Cached)
 
 	self.rope_query.with_and_register(Components.RopeJoint.get_type_name())
@@ -136,15 +136,17 @@ func rope_joint_system(_entity: RID, components: Array):
 func render_physic_meshes(_entity: RID, components: Array):
 	# Body, Mesh
 	var body : Components.PhysicsBody = components[0]
-	var mesh : Components.MeshComponent = components[1]
-	var direct_state := PhysicsServer3D.body_get_direct_state(body.body_id)
+	var direct_state : PhysicsDirectBodyState3D= PhysicsServer3D.body_get_direct_state(body.body_id)
 	var xform : Transform3D = direct_state.transform
 
 	# Update the component's transform for all other systems
-	body.transform = xform
+	body._transform = xform
+	body._velocity_cache = direct_state.linear_velocity
 	# Then render
+	if components[1] == null:
+		return
+	var mesh : Components.MeshComponent = components[1]
 	RenderingServer.instance_set_transform(mesh.instance, xform)
-	pass
 
 
 func render_non_physic_meshes(entity: RID, components: Array):

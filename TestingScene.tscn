@@ -84,29 +84,29 @@ collision_layer = 3
 collision_mask = 15
 
 [node name="CSGBox3D2" type="CSGBox3D" parent="Environment"]
-transform = Transform3D(9.53674e-07, 0.169577, 0, -34.2744, 0, 0, 0, 0, 27.1921, 15, -0.986538, -2.30784)
+transform = Transform3D(1.36461e-06, 0.169577, 0, -49.0431, 0, 0, 0, 0, 37.6689, 15, -0.986538, -2.30784)
 material_override = ExtResource("6_7hjm2")
 use_collision = true
 
 [node name="CSGBox3D4" type="CSGBox3D" parent="Environment"]
-transform = Transform3D(9.53674e-07, 0.169577, 0, -34.2744, 0, 0, 0, 0, 27.1921, -17, -0.986538, -2.30784)
+transform = Transform3D(1.36461e-06, 0.169577, 0, -49.0431, 0, 0, 0, 0, 37.6689, -17, -0.986538, -2.30784)
 material_override = ExtResource("6_7hjm2")
 use_collision = true
 
 [node name="CSGBox3D3" type="CSGBox3D" parent="Environment"]
-transform = Transform3D(34.2744, 0, 0, 1.91971e-14, -7.41245e-09, -27.1921, 9.53674e-07, 0.169577, -1.1886e-06, 0, 3.01346, -15.3078)
+transform = Transform3D(49.0431, 0, 0, 2.7469e-14, -7.41245e-09, -37.6689, 1.36461e-06, 0.169577, -1.64655e-06, 0, 3.01346, -15.3078)
 material_override = ExtResource("6_7hjm2")
 use_collision = true
 
 [node name="CSGBox3D5" type="CSGBox3D" parent="Environment"]
-transform = Transform3D(34.2744, 0, 0, 1.91971e-14, -4.40554e-07, -27.1921, 9.53674e-07, 10.0787, -1.1886e-06, -2.05783, 2.94801, 14.094)
+transform = Transform3D(49.0431, 0, 0, 2.7469e-14, -4.40554e-07, -37.6689, 1.36461e-06, 10.0787, -1.64655e-06, -2.05783, 2.94801, 16.0773)
 material_override = ExtResource("12_bdiev")
 transparency = 1.0
 use_collision = true
 collision_mask = 3
 
 [node name="CSGBox3D6" type="CSGBox3D" parent="Environment"]
-transform = Transform3D(38.3336, 0, 0, 1.06662e-06, 0.169577, 5.81868e-12, 4.92622e-20, 4.44089e-15, 35.6856, 2.26755, 14.608, -1.94082)
+transform = Transform3D(38.3336, 0, 0, 1.06662e-06, 0.169577, 5.81868e-12, 4.92622e-20, 4.44089e-15, 35.6856, 2.26755, 21.9122, -1.94082)
 material_override = ExtResource("6_7hjm2")
 transparency = 1.0
 use_collision = true

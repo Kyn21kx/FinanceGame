@@ -60,9 +60,8 @@ func set_component_data_for_entity(entity: RID, node_instance: Node, comp_dict: 
 			comp_instance = NodeComponentAdapter.registered_components[index].new()
 		
 		var fields : Dictionary = comp_dict[comp_key]
-	
-		for field_key in fields:
-			comp_instance.set(field_key, fields[field_key])
+		
+		NodeComponentAdapter.set_component_data_from_dict(comp_instance, node_instance, fields)
 
 		FlecsScene.entity_add_component_instance(entity, comp_instance.get_type_name(), comp_instance)
 
@@ -75,7 +74,8 @@ func copy_ecs_data():
 	# Walk through the global node data (just a file), get the 
 	var file := FileAccess.open("res://comp_data.json", FileAccess.READ)
 	var json : String = file.get_as_text()
-	var comp_data: Dictionary = JSON.parse_string(json)
+	var json_rep = JSON.parse_string(json)
+	var comp_data: Dictionary = JSON.to_native(json_rep)
 
 	for node_path: String in comp_data.keys():
 		var node_instance : Node = get_node(NodePath(node_path))
@@ -120,10 +120,8 @@ func generate_mesh() -> void:
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
-	# self._serialize_components()
-	# self.copy_ecs_data()
+	self.copy_ecs_data()
 	# self.generate_mesh()
-	pass
 
 func check_for_save():
 	if (Input.is_key_pressed(KEY_CTRL) and Input.is_key_pressed(KEY_S)):
@@ -142,7 +140,8 @@ func check_for_save():
 		if (comp_data.is_empty()):
 			return
 		var file := FileAccess.open("res://comp_data.json", FileAccess.WRITE)
-		file.store_string(JSON.stringify(comp_data))
+		var json_rep = JSON.from_native(comp_data)
+		file.store_string(JSON.stringify(json_rep))
 		print("Saved!")
 
 func on_response(status: int, body: PackedByteArray):
