@@ -55,14 +55,25 @@ class PhysicsBody:
 		get:
 			return self.__shape_ref
 		set(value):
-			print("Previous shape: ", self.shape)
 			if (self.shape.is_valid()):
 				PhysicsServer3D.body_remove_shape(self.body_id, 0)
 			self.__shape_ref = value
 			self.shape = self.__shape_ref.get_rid()
-			print("New shape: ", self.shape)
 			PhysicsServer3D.body_add_shape(self.body_id, self.shape)
-			
+
+	var shape_position: Vector3:
+		get:
+			print("Shape position getter")
+			if (not self.shape.is_valid()):
+				return Vector3.ZERO
+			return PhysicsServer3D.body_get_shape_transform(self.body_id, 0).origin
+		set(value):
+			print("Shape position setter")
+			if (not self.shape.is_valid()):
+				return
+			var xform := PhysicsServer3D.body_get_shape_transform(self.body_id, 0)
+			xform.origin = value
+			PhysicsServer3D.body_set_shape_transform(self.body_id, 0, xform)
 
 	var axis_lock_linear_x : bool:
 		get:
@@ -162,7 +173,7 @@ class PhysicsBody:
 		PhysicsServer3D.body_set_mode(self.body_id, type)
 
 	static func get_readonly_props() -> Dictionary:
-		return {}
+		return { "transform": true }
 	
 	static func get_type_name() -> StringName:
 		return "PhysicsBody"

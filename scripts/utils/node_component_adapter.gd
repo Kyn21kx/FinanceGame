@@ -171,6 +171,35 @@ func on_component_selected(item: int):
 	render_component_properties(comp_instance)
 	self.current_dropdown.select(0)
 
+static func set_component_data_from_dict(comp_instance, node_instance: Node, fields: Dictionary) -> void:
+	for field_key in fields:
+		var property_instance = comp_instance.get(field_key)
+		if property_instance is Resource:
+			# Get the actual resource from disk and use it to instantiate the component instance
+			var resource_path : String = fields[field_key]
+			# Given a shape that was created in memory (for Mesh instance 3D, the physics body should already have the shape)
+			if resource_path.is_empty():
+				continue
+			comp_instance.set(field_key, load(resource_path))
+			continue
+		if property_instance is Transform3D and node_instance is Node3D:
+			var setter := func _set_xform(xform: Transform3D):
+				comp_instance.set(field_key, xform)
+			setter.call_deferred(node_instance.global_transform)
+			continue
+		if property_instance is RID:
+			# RIDs are always calculated at runtime
+			continue
+
+		if fields[field_key] is String:
+			comp_instance.set(field_key, str_to_var(fields[field_key]))
+			continue
+			
+
+		comp_instance.set(field_key, fields[field_key])
+
+	pass
+
 func fetch_component_data() -> void:
 	var comp_data : Dictionary = self.global_metadata
 	if (comp_data.is_empty()):
@@ -202,8 +231,8 @@ func fetch_component_data() -> void:
 
 			safe_add_child_to(self.current_container, self.current_header)
 			
-			for field_key in fields:
-				comp_instance.set(field_key, fields[field_key])
+			set_component_data_from_dict(comp_instance, current_node, fields)
+			
 			render_component_properties(comp_instance)
 
 
@@ -227,7 +256,7 @@ func _init() -> void:
 	var parsed_json = JSON.parse_string(json)
 	if (parsed_json == null):
 		return
-	self.global_metadata = JSON.parse_string(json) as Dictionary
+	self.global_metadata = JSON.to_native(parsed_json) as Dictionary
 
 func _parse_begin(_object: Object) -> void:
 	self.current_object = _object

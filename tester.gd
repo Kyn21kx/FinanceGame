@@ -60,23 +60,8 @@ func set_component_data_for_entity(entity: RID, node_instance: Node, comp_dict: 
 			comp_instance = NodeComponentAdapter.registered_components[index].new()
 		
 		var fields : Dictionary = comp_dict[comp_key]
-	
-		for field_key in fields:
-			var property_instance = comp_instance.get(field_key)
-			if property_instance is Resource:
-				# Get the actual resource from disk and use it to instantiate the component instance
-				var resource_path : String = fields[field_key]
-				assert(!resource_path.is_empty(), "Resource path for component field " + field_key + " is not set!")
-				comp_instance.set(field_key, load(resource_path))
-				continue
-			# For ECS imported nodes (they should already have a Transform3D component with the Node3D data)
-			if property_instance is Transform3D and node_instance is Node3D:
-				var setter := func _set_xform(xform: Transform3D):
-					comp_instance.set(field_key, xform)
-				setter.call_deferred(node_instance.global_transform)
-				continue
-
-			comp_instance.set(field_key, fields[field_key])
+		
+		NodeComponentAdapter.set_component_data_from_dict(comp_instance, node_instance, fields)
 
 		FlecsScene.entity_add_component_instance(entity, comp_instance.get_type_name(), comp_instance)
 
@@ -89,7 +74,8 @@ func copy_ecs_data():
 	# Walk through the global node data (just a file), get the 
 	var file := FileAccess.open("res://comp_data.json", FileAccess.READ)
 	var json : String = file.get_as_text()
-	var comp_data: Dictionary = JSON.parse_string(json)
+	var json_rep = JSON.parse_string(json)
+	var comp_data: Dictionary = JSON.to_native(json_rep)
 
 	for node_path: String in comp_data.keys():
 		var node_instance : Node = get_node(NodePath(node_path))
@@ -136,7 +122,6 @@ func _ready() -> void:
 		return
 	self.copy_ecs_data()
 	# self.generate_mesh()
-	pass
 
 func check_for_save():
 	if (Input.is_key_pressed(KEY_CTRL) and Input.is_key_pressed(KEY_S)):
@@ -155,7 +140,8 @@ func check_for_save():
 		if (comp_data.is_empty()):
 			return
 		var file := FileAccess.open("res://comp_data.json", FileAccess.WRITE)
-		file.store_string(JSON.stringify(comp_data))
+		var json_rep = JSON.from_native(comp_data)
+		file.store_string(JSON.stringify(json_rep))
 		print("Saved!")
 
 func on_response(status: int, body: PackedByteArray):
