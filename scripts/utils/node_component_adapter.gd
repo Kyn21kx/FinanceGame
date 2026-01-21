@@ -26,6 +26,7 @@ static var registered_components_name := [
 
 
 static var instance: NodeComponentAdapter
+var is_init: bool = false
 var editor_interface : EditorInterface = null
 var current_object : Object = null
 var current_container: Control = null
@@ -249,7 +250,14 @@ func option_dropdown() -> Control:
 func _init() -> void:
 	instance = self
 	# Load the data from the file
-	var file := FileAccess.open("res://comp_data.json", FileAccess.READ)
+
+func _post_init() -> void:
+	var scene_name : String = EditorInterface.get_edited_scene_root().scene_file_path
+	scene_name = scene_name.replace("res://", "")
+	scene_name = scene_name.replace("/", "")
+	scene_name = scene_name.trim_suffix(".tscn")
+	var file_name : String = "res://" + scene_name + ".json"
+	var file := FileAccess.open(file_name, FileAccess.READ)
 	if (file == null):
 		return
 	var json : String = file.get_as_text()
@@ -257,12 +265,15 @@ func _init() -> void:
 	if (parsed_json == null):
 		return
 	self.global_metadata = JSON.to_native(parsed_json) as Dictionary
+	self.is_init = true
 
 func _parse_begin(_object: Object) -> void:
 	self.current_object = _object
 	if (self.current_object == null):
 		print("Current object is null!")
 		return
+	if (!self.is_init):
+		self._post_init()
 	var root : Node = (self.current_object as Node).get_tree().edited_scene_root
 	var path := root.get_path_to(self.current_object as Node)
 	self.global_metadata.get_or_add(str(path), {})

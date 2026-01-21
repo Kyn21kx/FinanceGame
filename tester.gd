@@ -72,13 +72,21 @@ func set_component_data_for_entity(entity: RID, node_instance: Node, comp_dict: 
 
 func copy_ecs_data():
 	# Walk through the global node data (just a file), get the 
-	var file := FileAccess.open("res://comp_data.json", FileAccess.READ)
+	var scene_name : String = self.get_tree().current_scene.scene_file_path
+	scene_name = scene_name.replace("res://", "")
+	scene_name = scene_name.replace("/", "")
+	scene_name = scene_name.trim_suffix(".tscn")
+	var file_name : String = "res://" + scene_name + ".json"
+	var file := FileAccess.open(file_name, FileAccess.READ)
 	var json : String = file.get_as_text()
 	var json_rep = JSON.parse_string(json)
 	var comp_data: Dictionary = JSON.to_native(json_rep)
 
 	for node_path: String in comp_data.keys():
 		var node_instance : Node = get_node(NodePath(node_path))
+		if node_instance == null:
+			push_warning("Mismatch on nodes, node ", node_path, " does not exist in the current scene")
+			continue
 		var entity : RID
 		var is_imported_node : bool = node_instance is ECSImportedNode
 		if (is_imported_node):
@@ -125,7 +133,6 @@ func _ready() -> void:
 
 func check_for_save():
 	if (Input.is_key_pressed(KEY_CTRL) and Input.is_key_pressed(KEY_S)):
-		print("Saving")
 		var comp_data: Dictionary = NodeComponentAdapter.instance.global_metadata
 
 		# Add the nodes to save to the comp_data thing
@@ -139,7 +146,13 @@ func check_for_save():
 
 		if (comp_data.is_empty()):
 			return
-		var file := FileAccess.open("res://comp_data.json", FileAccess.WRITE)
+		var scene_name : String = EditorInterface.get_edited_scene_root().scene_file_path
+		scene_name = scene_name.replace("res://", "")
+		scene_name = scene_name.replace("/", "")
+		scene_name = scene_name.trim_suffix(".tscn")
+		var file_name : String = "res://" + scene_name + ".json"
+		print("Saving to ", file_name)
+		var file := FileAccess.open(file_name, FileAccess.WRITE)
 		var json_rep = JSON.from_native(comp_data)
 		file.store_string(JSON.stringify(json_rep))
 		print("Saved!")

@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://17diqbcutb3p"]
+[gd_scene load_steps=21 format=3 uid="uid://17diqbcutb3p"]
 
 [ext_resource type="Script" uid="uid://b2271ootsknqm" path="res://scripts/systems/movement_system.gd" id="1_dc2kq"]
 [ext_resource type="Script" uid="uid://7sut20oko3d3" path="res://tester.gd" id="1_ulcth"]
@@ -13,6 +13,8 @@
 [ext_resource type="Script" uid="uid://bf5pb7emmodrb" path="res://scripts/systems/camera_system.gd" id="9_35ann"]
 [ext_resource type="Material" uid="uid://bnb8hwnjk70ut" path="res://materials/BouncyTest.tres" id="12_bdiev"]
 [ext_resource type="Script" uid="uid://bb68d6gx6so21" path="res://bouncer.gd" id="13_pnog0"]
+[ext_resource type="PackedScene" uid="uid://c0ovhqnw030dw" path="res://models/placeholders/kenney_mini-characters/Models/GLB format/character-female-e.glb" id="14_loh3e"]
+[ext_resource type="Script" uid="uid://u5eaev3bncxj" path="res://scripts/utils/ecs_imported_node.gd" id="15_llah2"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_ypt0w"]
 material = ExtResource("2_6mnxl")
@@ -140,3 +142,7 @@ script = ExtResource("13_pnog0")
 transform = Transform3D(0.5, -7.45058e-09, 0, 0, 0.5, 0, 0, 0, 0.5, -0.0299711, 3.10295, 0)
 visible = false
 calculate_tangents = false
+
+[node name="character-female-e2" parent="." instance=ExtResource("14_loh3e")]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 3.60368, -0.625321, -7.23087)
+script = ExtResource("15_llah2")
