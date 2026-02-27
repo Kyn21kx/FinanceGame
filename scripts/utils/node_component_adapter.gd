@@ -193,7 +193,8 @@ static func set_component_data_from_dict(comp_instance, node_instance: Node, fie
 			continue
 
 		if fields[field_key] is String:
-			comp_instance.set(field_key, str_to_var(fields[field_key]))
+			var value = fields[field_key]
+			comp_instance.set(field_key, value)
 			continue
 			
 

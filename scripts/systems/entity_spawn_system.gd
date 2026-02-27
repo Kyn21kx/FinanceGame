@@ -73,7 +73,7 @@ func _ready() -> void:
 	var mat_2 := StandardMaterial3D.new()
 	mat_2.albedo_color = Color.SKY_BLUE
 	mesh_2.surface_set_material(0, mat_2)
-	# self._make_player(controller_comp_p2, mesh_2)
+	self._make_player(controller_comp_p2, mesh_2)
 	
 	var coin_shape : Shape3D = self.coin_model.create_convex_shape()
 	self._make_coin(Vector3(2, 0, 1), coin_shape)

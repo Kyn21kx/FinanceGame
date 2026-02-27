@@ -10,6 +10,7 @@ class_name EditorImporterSystem extends Node
 var time: float = 0
 var last_spawn: int = 0
 var nodes_to_save: Array[ECSImportedNode] = []
+var sample_query: Query = null
 static var instance: EditorImporterSystem = null
 
 func _init() -> void:
@@ -164,7 +165,6 @@ func on_response(status: int, body: PackedByteArray):
 func _process(delta: float):
 	if Engine.is_editor_hint():
 		self.check_for_save()
-
 		return
 	self.time += delta
 	var truncated: int = floori(self.time)
