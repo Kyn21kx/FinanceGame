@@ -144,5 +144,5 @@ visible = false
 calculate_tangents = false
 
 [node name="character-female-e2" parent="." instance=ExtResource("14_loh3e")]
-transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 3.60368, -0.625321, -7.23087)
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 3.60368, 9.00775, -7.23087)
 script = ExtResource("15_llah2")

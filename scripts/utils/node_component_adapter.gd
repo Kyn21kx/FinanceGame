@@ -34,6 +34,7 @@ var component_header_scene = preload("res://addons/component_creator/ui_componen
 var current_header: ComponentEditor = null
 var current_dropdown: OptionButton = null
 var global_metadata: Dictionary = {}
+var prefab_file_dialog: EditorFileDialog = null
 
 
 func _can_handle(object: Object) -> bool:
@@ -62,9 +63,7 @@ func populate_dropdown(dropdown: OptionButton):
 
 
 func render_component_properties(sample_instance):
-	var root := (self.current_object as Node).get_tree().edited_scene_root
-	var path : NodePath = root.get_path_to(self.current_object as Node)
-	var comp_data: Dictionary = self.global_metadata.get_or_add(str(path), {})
+	var comp_data: Dictionary = self.get_components_dict_for_node(self.current_object as Node)
 
 	var fields : Dictionary = comp_data.get_or_add(sample_instance.get_type_name(), {})
 	if (fields.is_empty()):
@@ -202,10 +201,17 @@ static func set_component_data_from_dict(comp_instance, node_instance: Node, fie
 
 	pass
 
+# Returns the dictionary that represents that component, each entry in the dict is [CompName, Dict[PropertyName, Value]]
+func get_components_dict_for_node(node: Node) -> Dictionary:
+	var root : Node = (self.current_object as Node).get_tree().edited_scene_root
+	var path : NodePath = root.get_path_to(node)
+	return self.global_metadata.get_or_add(str(path), {})
+
 func fetch_component_data() -> void:
 	var comp_data : Dictionary = self.global_metadata
 	if (comp_data.is_empty()):
 		return
+	# Could we not just do for comp_dict in comp_data???
 	for node_path: String in comp_data.keys():
 		var current_node : Node = (self.current_object as Node)
 		var comp_node : Node = current_node.get_tree().edited_scene_root.get_node(NodePath(node_path))
@@ -268,6 +274,32 @@ func _post_init() -> void:
 	self.global_metadata = JSON.to_native(parsed_json) as Dictionary
 	self.is_init = true
 
+func create_title_label(text: String) -> Label:
+	var label := Label.new()
+	label.text = text
+	label.label_settings = LabelSettings.new()
+	label.label_settings.font_size = 24
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD
+	return label
+
+func save_entity_to_prefab(path: String):
+	# Fetch all components for the current object
+	PrefabManager.to_prefab({}, path)
+
+func create_prefab_save_btn(text: String) -> Button:
+	var button := Button.new()
+	button.text = text
+	# Open a file picker
+	button.pressed.connect(func _open_file():
+		self.prefab_file_dialog = EditorFileDialog.new()
+		self.prefab_file_dialog.file_mode = EditorFileDialog.FILE_MODE_SAVE_FILE
+		self.prefab_file_dialog.file_selected.connect(save_entity_to_prefab)
+		var base_control := EditorInterface.get_base_control()
+		base_control.add_child(self.prefab_file_dialog)
+		self.prefab_file_dialog.popup_centered()
+	)
+	return button
+
 func _parse_begin(_object: Object) -> void:
 	self.current_object = _object
 	if (self.current_object == null):
@@ -278,12 +310,14 @@ func _parse_begin(_object: Object) -> void:
 	var root : Node = (self.current_object as Node).get_tree().edited_scene_root
 	var path := root.get_path_to(self.current_object as Node)
 	self.global_metadata.get_or_add(str(path), {})
-	var label := Label.new()
-	label.text = "This object will be saved in the ECS simulation!"
-	label.label_settings = LabelSettings.new()
-	label.label_settings.font_size = 24
-	label.autowrap_mode = TextServer.AUTOWRAP_WORD
+
+	# Setup the UI
+	var label := self.create_title_label("This object will be saved in the ECS simulation!")
 	self.add_custom_control(label)
+
+	var save_prefab_btn := self.create_prefab_save_btn("Save entity to prefab")
+	self.add_custom_control(save_prefab_btn)
+
 	self.current_container = VBoxContainer.new()
 	self.fetch_component_data()
 	self.current_dropdown = self.option_dropdown()
