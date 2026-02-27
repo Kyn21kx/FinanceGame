@@ -73,7 +73,7 @@ func _ready() -> void:
 	var mat_2 := StandardMaterial3D.new()
 	mat_2.albedo_color = Color.SKY_BLUE
 	mesh_2.surface_set_material(0, mat_2)
-	# self._make_player(controller_comp_p2, mesh_2)
+	self._make_player(controller_comp_p2, mesh_2)
 	
 	var coin_shape : Shape3D = self.coin_model.create_convex_shape()
 	self._make_coin(Vector3(2, 0, 1), coin_shape)
@@ -135,11 +135,12 @@ func _make_player(controller_comp: Components.Controller, mesh: Mesh) -> void:
 	var physics_comp := Components.PhysicsBody.new(self.player_shape)
 	physics_comp.set_body_type(PhysicsServer3D.BODY_MODE_RIGID_LINEAR)
 	physics_comp.lock_axis(PhysicsServer3D.BODY_AXIS_ANGULAR_X | PhysicsServer3D.BODY_AXIS_ANGULAR_Y | PhysicsServer3D.BODY_AXIS_ANGULAR_Z)
+	physics_comp.enable_continuous_collision_detection(true)
 	FlecsScene.entity_add_component_instance(player, Components.PhysicsBody.get_type_name(), physics_comp)
 	
 	var movement_comp := Components.Movement.new()
 	movement_comp.speed = 20 
-	movement_comp.jump_force = 20
+	movement_comp.jump_force = 10
 	FlecsScene.entity_add_component_instance(player, Components.Movement.get_type_name(), movement_comp)
 	
 	FlecsScene.entity_add_component_instance(player, Components.Controller.get_type_name(), controller_comp)

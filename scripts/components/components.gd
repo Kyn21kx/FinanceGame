@@ -63,12 +63,10 @@ class PhysicsBody:
 
 	var shape_position: Vector3:
 		get:
-			print("Shape position getter")
 			if (not self.shape.is_valid()):
 				return Vector3.ZERO
 			return PhysicsServer3D.body_get_shape_transform(self.body_id, 0).origin
 		set(value):
-			print("Shape position setter")
 			if (not self.shape.is_valid()):
 				return
 			var xform := PhysicsServer3D.body_get_shape_transform(self.body_id, 0)
@@ -110,6 +108,12 @@ class PhysicsBody:
 			return self.is_axis_locked(PhysicsServer3D.BODY_AXIS_ANGULAR_Z)
 		set(value):
 			self.lock_axis(PhysicsServer3D.BODY_AXIS_ANGULAR_Z, value)
+
+	var continous_collision_detection : bool:
+		get:
+			return self.is_continuous_collision_detection_enabled()
+		set(value):
+			self.enable_continuous_collision_detection(value)
 
 
 	func _init(p_shape: Shape3D = BoxShape3D.new(), p_transform: Transform3D = Transform3D.IDENTITY) -> void:
@@ -168,6 +172,12 @@ class PhysicsBody:
 
 	func set_bounciness(bounciness: float) -> void:
 		PhysicsServer3D.body_set_param(self.body_id, PhysicsServer3D.BODY_PARAM_BOUNCE, bounciness)
+
+	func enable_continuous_collision_detection(enable: bool) -> void:
+		PhysicsServer3D.body_set_enable_continuous_collision_detection(self.body_id, enable)
+
+	func is_continuous_collision_detection_enabled() -> bool:
+		return PhysicsServer3D.body_is_continuous_collision_detection_enabled(self.body_id)
 	
 	func set_body_type(type: int) -> void:
 		PhysicsServer3D.body_set_mode(self.body_id, type)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://c37xemanlh67j"]
+[gd_scene load_steps=11 format=3 uid="uid://c37xemanlh67j"]
 
 [ext_resource type="Material" uid="uid://crkr2yoi6vwmh" path="res://materials/floor_test.tres" id="1_48s3g"]
 [ext_resource type="Script" uid="uid://7sut20oko3d3" path="res://tester.gd" id="1_g3hqd"]
@@ -7,6 +7,8 @@
 [ext_resource type="Script" uid="uid://b2271ootsknqm" path="res://scripts/systems/movement_system.gd" id="5_rjh52"]
 [ext_resource type="PackedScene" uid="uid://c0ovhqnw030dw" path="res://models/placeholders/kenney_mini-characters/Models/GLB format/character-female-e.glb" id="6_f68df"]
 [ext_resource type="Script" uid="uid://u5eaev3bncxj" path="res://scripts/utils/ecs_imported_node.gd" id="7_tpt6t"]
+[ext_resource type="Script" uid="uid://dcq3p8p8lb4hi" path="res://unit_tests/flecs.gd" id="8_8u61t"]
+[ext_resource type="Script" uid="uid://4ersi5qgb1rw" path="res://serverTest.gd" id="9_k6q6g"]
 
 [sub_resource type="PrismMesh" id="PrismMesh_rjh52"]
 
@@ -14,7 +16,9 @@
 script = ExtResource("1_g3hqd")
 prefab_test = ExtResource("2_d86h8")
 
-[node name="EntityManagementSystem" type="EntityManagementSystem" parent="."]
+[node name="FlecsTest" type="Node" parent="."]
+script = ExtResource("8_8u61t")
+metadata/_custom_type_script = "uid://dcq3p8p8lb4hi"
 
 [node name="CSGBox3D" type="CSGBox3D" parent="."]
 transform = Transform3D(34.2744, 0, 0, 0, 0.169577, 0, 0, 0, 27.1921, 0, -0.986538, -2.30784)
@@ -52,3 +56,11 @@ metadata/_custom_type_script = "uid://b2271ootsknqm"
 [node name="character-female-e2" parent="." instance=ExtResource("6_f68df")]
 transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 3.60368, 2.81765, 0.186013)
 script = ExtResource("7_tpt6t")
+
+[node name="TestCubeSystem" type="TestCubeSystem" parent="."]
+
+[node name="ServerTest" type="SecureHttpServer" parent="."]
+script = ExtResource("9_k6q6g")
+metadata/_custom_type_script = "uid://4ersi5qgb1rw"
+
+[node name="EntityManagementSystem" type="EntityManagementSystem" parent="."]
